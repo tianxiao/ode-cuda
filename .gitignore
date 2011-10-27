@@ -1,0 +1,10 @@
+Makefile
+.deps
+config.log
+config.status
+libtool
+ode-config
+ode.pc
+ode/src/config.h
+ode/src/stamp-h1
+
