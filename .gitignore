@@ -7,4 +7,8 @@ ode-config
 ode.pc
 ode/src/config.h
 ode/src/stamp-h1
+*.lo
+*.o
+*.la
+.libs
 
