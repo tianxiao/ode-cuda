@@ -1094,12 +1094,13 @@ extern "C" void dTestMatrixComparison()
 extern "C" void dTestDataStructures();
 extern "C" void dTestMatrixComparison();
 extern "C" void dTestSolveLCP();
+extern "C" void dTestSolveLCP2();
 
 
 int main()
 {
   dInitODE();
-  testRandomNumberGenerator();
+/*  testRandomNumberGenerator();
   testInfinity();
   testPad();
   testCrossProduct();
@@ -1121,8 +1122,8 @@ int main()
   testRtoQandQtoR();
   testQuaternionMultiply();
   testRotationFunctions();
-  dTestMatrixComparison();
-  dTestSolveLCP();
+  dTestMatrixComparison();*/
+  dTestSolveLCP2();
   // dTestDataStructures();
   dCloseODE();
   return 0;
