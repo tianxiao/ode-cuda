@@ -8,7 +8,16 @@
 #include "util.h"
 #include "config.h"
 
-void cuda_dSetZero(dReal *a, int n)
+void checkCUDAError(const char *msg)
+{
+	cudaError_t err = cudaGetLastError();
+	if( cudaSuccess != err) {
+		fprintf(stderr, "Cuda error: %s: %s.\n", msg, cudaGetErrorString( err));
+		exit(EXIT_FAILURE);
+	}                         
+}
+
+void cuda_testMemcpy()
 {
 	float *a_h, *b_h;	// pointers to host memory
 	float *a_d, *b_d;	// pointers to device memory
@@ -37,5 +46,34 @@ void cuda_dSetZero(dReal *a, int n)
 	// cleanup
 	free(a_h); free(b_h);
 	cudaFree(a_d); cudaFree(b_d);
+}
+
+__global__ void setzero(dReal *a, int n)
+{
+	int tid = blockIdx.x;
+	if(tid < n)
+		a[tid] = 0;
+}
+
+void cuda_dSetZero(dReal *a, int n)
+{
+	dReal *dev_a; 
+
+	// allocate memory on GPU
+	cudaMalloc((void**) &dev_a, n*sizeof(dReal));
+	checkCUDAError("malloc");
+
+	//copy array from CPU to GPU (not necessary)
+	cudaMemcpy(dev_a, a, n*sizeof(dReal), cudaMemcpyHostToDevice);
+	checkCUDAError("memcpy");
+
+	//fill array with 0 on the gpu
+	setzero<<<n,1>>>(dev_a, n);
+
+	//copy array of 0's 'a' from GPU to CPU
+	cudaMemcpy(a, dev_a, n*sizeof(dReal), cudaMemcpyDeviceToHost);
+	checkCUDAError("memcpy");
+
+	cudaFree(dev_a);		
 }
 

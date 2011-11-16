@@ -171,6 +171,19 @@ void testSetZero()
   HEADER;
   dReal a[100];
   dMakeRandomVector (a,100,1.0);
+  dSetZero (a,100);
+  for (int i=0; i<100; i++) if (a[i] != 0.0) {
+    printf ("\tFAILED\n");
+    return;
+  }
+  printf ("\tpassed\n");
+}
+
+void cuda_testSetZero()
+{
+  HEADER;
+  dReal a[100];
+  dMakeRandomVector (a,100,1.0);
   cuda_dSetZero (a,100);
   for (int i=0; i<100; i++) if (a[i] != 0.0) {
     printf ("\tFAILED\n");
@@ -1103,9 +1116,9 @@ int main()
 /*  testRandomNumberGenerator();
   testInfinity();
   testPad();
-  testCrossProduct();*/
+  testCrossProduct();
   testSetZero();
-/*  testNormalize3();
+  testNormalize3();
   //testReorthonormalize();     ... not any more
   testPlaneSpace();
   testMatrixMultiply();
@@ -1124,6 +1137,8 @@ int main()
   testRotationFunctions();
   dTestMatrixComparison();
   dTestSolveLCP2();*/
+  cuda_testMemcpy();
+  cuda_testSetZero();
   // dTestDataStructures();
   dCloseODE();
   return 0;

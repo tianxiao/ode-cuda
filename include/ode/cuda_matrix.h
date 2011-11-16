@@ -7,7 +7,8 @@
 extern "C" {
 #endif
 
-ODE_API void cuda_dSetZero (dReal *a, int n);
+ODE_API void cuda_testMemcpy();
+ODE_API void cuda_dSetZero(dReal *a, int n);
 
 #ifdef __cplusplus
 }
