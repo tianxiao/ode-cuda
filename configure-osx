@@ -2,7 +2,7 @@
 # Thanks: http://groups.google.com/group/ode-users/browse_thread/thread/ef7861837bfb01f3
 
 export CPPFLAGS=-I/usr/X11/include 
-export LDFLAGS="-L/usr/X11/lib -lGL -lGLU -lglut -lX11 -L/usr/local/cuda/lib -lcudart -lcuda -lcutil" 
-#export NVCC=/usr/local/bin/nvcc
-./configure --with-cuda=/usr/local/cuda --with-drawstuff=X11 --enable-demos "$@"
+export LDFLAGS="-L/usr/X11/lib -lGL -lGLU -lglut -lX11 -L/usr/local/cuda/lib -lcudart -lcuda" 
+export NVCC=/usr/local/bin/nvcc
+./configure --with-drawstuff=X11 --enable-demos "$@"
 
