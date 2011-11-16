@@ -1103,9 +1103,9 @@ int main()
 /*  testRandomNumberGenerator();
   testInfinity();
   testPad();
-  testCrossProduct();
+  testCrossProduct();*/
   testSetZero();
-  testNormalize3();
+/*  testNormalize3();
   //testReorthonormalize();     ... not any more
   testPlaneSpace();
   testMatrixMultiply();
@@ -1122,8 +1122,8 @@ int main()
   testRtoQandQtoR();
   testQuaternionMultiply();
   testRotationFunctions();
-  dTestMatrixComparison();*/
-  dTestSolveLCP2();
+  dTestMatrixComparison();
+  dTestSolveLCP2();*/
   // dTestDataStructures();
   dCloseODE();
   return 0;
