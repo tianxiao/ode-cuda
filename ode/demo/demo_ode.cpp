@@ -171,7 +171,7 @@ void testSetZero()
   HEADER;
   dReal a[100];
   dMakeRandomVector (a,100,1.0);
-  dSetZero (a,100);
+  cuda_dSetZero (a,100);
   for (int i=0; i<100; i++) if (a[i] != 0.0) {
     printf ("\tFAILED\n");
     return;

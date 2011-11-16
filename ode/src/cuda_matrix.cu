@@ -8,7 +8,7 @@
 #include "util.h"
 #include "config.h"
 
-void dSetZero2(dReal *a, int n)
+void cuda_dSetZero(dReal *a, int n)
 {
 	float *a_h, *b_h;	// pointers to host memory
 	float *a_d, *b_d;	// pointers to device memory

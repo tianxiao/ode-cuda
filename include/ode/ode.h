@@ -34,6 +34,7 @@
 #include <ode/memory.h>
 #include <ode/odemath.h>
 #include <ode/matrix.h>
+#include <ode/cuda_matrix.h>
 #include <ode/timer.h>
 #include <ode/rotation.h>
 #include <ode/mass.h>
