@@ -1,1 +1,16 @@
-lkjlkj
+void dSetZero(dReal *a, int n){	
+	dReal *dev_a; 
+	// allocate memory on GPU
+	HANDLE_ERROR( cudaMalloc ( (void**)&dev_a , n * sizeof(dReal)));
+	//fill array with 0 on the gpu
+	setzero<<n,1>>(dev_a);
+	//copy array of 0's 'a' from GPU to CPU
+	HANDLE_ERROR (cudaMemcpy(a,dev_a,n*sizeof(dReal), cudaMemcpyDeviceToHost));
+	cudaFree( dev_a ) ; 	
+}
+
+__global__ void setzero(dReal *a) {
+	int tid = blockIdx.x;
+	if(tid<n)
+		a[tid]=0;
+}
