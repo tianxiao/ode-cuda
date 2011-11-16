@@ -104,87 +104,49 @@ fi
 
 AC_DEFINE_UNQUOTED(_OU_TARGET_OS, $targetos)
 
+# -------------------------------------------------------------
+# Setup CUDA paths
+# -------------------------------------------------------------
+AC_ARG_WITH([cuda],
+    [  --with-cuda=PATH			prefix where cuda is installed [default=auto]])
+if test -n "$with_cuda"
+then
+    CUDA_CFLAGS="-I$with_cuda/include"
+    CUDA_LIBS="-L$with_cuda/lib -lcuda -lcudart"
+    NVCC="$with_cuda/bin/nvcc"
+else
+    CUDA_CFLAGS="-I/usr/local/cuda/include"
+    CUDA_LIBS="-L/usr/local/cuda/lib -lcuda -lcudart"
+    NVCC="nvcc"
+fi
+AC_SUBST(CUDA_CFLAGS)
+AC_SUBST(CUDA_LIBS)
+AC_SUBST(NVCC)
 
-############################################
-# NVIDIA Cuda Compiler detection and setup #
-############################################
-
-# If cuda is requested to be enabled
-AC_ARG_ENABLE(cuda, 
-        AS_HELP_STRING([--enable-cuda=ARCH], [Enable cuda based modules for architecture ARCH (see nvcc option -arch).]),[
-
-        # Search nvcc compiler
-        AC_PATH_PROG(NVCC, nvcc, "no")
-        AS_IF([test "x$NVCC" = "xno"],[
-                        AC_MSG_ERROR([NVCC compiler not found!])
-        ])
-
-        # Check nvcc version, should be 3.0
-        AS_IF([nvcc --version | grep -q "release 3.0"],
-                        [],
-                        [AC_MSG_WARN([NVCC compiler version is NOT 3.0!])
-        ])
-
-        # If $with_cuda is not empty, set to CUDA_ARCH to
-        # supplied value, else set to value sm_11
-        AS_IF([test "x$enableval" = "xyes"],[
-                        CUDA_ARCH=" -arch=sm_11"
-        ],[
-                CUDA_ARCH=" -arch=$enableval"
-        ])
-
-                # Set CUDA_CFLAGS to $NVCC, where substring "bin/nvcc"
-                # is substituted by "include".
-                CUDA_CFLAGS=" -I${NVCC/'bin/nvcc'/include}"
-
-                #Set CUDA_CFLAGS to $NVCC, where substring "bin/nvcc"
-                #is substituted by "lib".
-                CUDA_LIBS=" -L${NVCC/'bin/nvcc'/lib}"
-
-                # If $build_cpu contains "_64", append "64" to CUDA_LIBS
-        AS_IF([echo $build_cpu | grep -q "_64"],
-                [CUDA_LIBS+="64"])
-
-                # Append " -lcudart" to CUDA_LIBS
-                CUDA_LIBS+=" -lcudart"
-
-        # Symbolize that cuda is wanted
-        with_cuda=$enableval
-
-        # Make variables available in Makefile.am
-        AC_SUBST(CUDA_CFLAGS)
-        AC_SUBST(CUDA_LIBS)
-        AC_SUBST(NVCC)
-])
-# Set this conditional if cuda is wanted
-AM_CONDITIONAL([WANT_CUDA], [test -n "$with_cuda"])
-
-# Check whether to use device emulation mode for cuda (if no cuda capable gpu is available)
 AC_ARG_ENABLE([emu],
-        AS_HELP_STRING([--enable-emu], [Enable device emulation for cuda modules (nvcc version <= 3.0 only).]),
-        [EMULATION=true],
-        [EMULATION=false])
+    [  --enable-emu    Turn on device emulation for CUDA],
+    [case "${enableval}" in
+		yes) EMULATION=true;;
+		no)  EMULATION=false;;
+		*) AC_MSG_ERROR([bad value ${enableval} for --enable-emu]);;
+    esac],
+    [EMULATION=false]
+)
 
-# Set up compilation flags for cuda compiler nvcc, if with_cuda is set
-AS_IF([test -n "$with_cuda"],[
-
-        # If debug flag is set apply debugging compilation flags, otherwise build compilation flags
-        AS_IF([test "x$DEBUG" = "xtrue"],
-                [NVCCFLAGS="-g --compiler-options -fno-strict-aliasing --compiler-options -fno-inline"],
-                [NVCCFLAGS="-O3 -use_fast_math --compiler-options -fno-strict-aliasing --compiler-options -fno-inline"])
-
-        # Add architecture to flags
-        NVCCFLAGS+=" $CUDA_ARCH"
-
-        # If device emulation was set, add deviceemu flag
-        AS_IF([test "x$EMULATION" = "xtrue"],
-                [NVCCFLAGS+=" -deviceemu"])
-
-])
-# Make NVCCFLAGS available in Makefile.am
+# -------------------------------------------------------------
+# Setup nvcc flags
+# -------------------------------------------------------------
+if test x$DEBUG = xtrue
+then
+    NVCCFLAGS="-g"
+else
+    NVCCFLAGS="-O3 -use_fast_math"
+fi
+if test x$EMULATION = xtrue
+then
+    NVCCFLAGS+=" -deviceemu"
+fi
 AC_SUBST(NVCCFLAGS)
-
-##################################################################################################
 
 AC_ARG_VAR([OU_NAMESPACE], [which namespace OU will be compiled in])
 AC_ARG_WITH([namespace],

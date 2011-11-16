@@ -1,3 +1,10 @@
+.cu.o:
+	$(NVCC) -o $@ -c $< $(NVCCFLAGS)
+#.cu.lo:
+#	$(top_srcdir)/cudalt.py $@ $(NVCC) -c $(NVCCFLAGS) $<
+.cu.lo:
+	$(LIBTOOL) --tag=CXX --mode=compile $(NVCC) --compile $(NVCC_FLAGS) -I$(top_srcdir)/include/ -I$(top_srcdir)/include/ode/ --machine 64 -o $@ $^ -static
+
 SUBDIRS = joints
 
 AM_CPPFLAGS = -I$(top_srcdir)/include
@@ -60,7 +67,8 @@ libode_la_SOURCES =     array.cpp array.h \
                         stepfast.cpp \
                         testing.cpp testing.h \
                         timer.cpp \
-                        util.cpp util.h
+                        util.cpp util.h \
+						cuda_matrix.cu cuda_matrix.h
 
 
 ###################################
