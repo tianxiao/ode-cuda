@@ -311,7 +311,7 @@ void makeIdMatrix(dReal *a, int s, int n)
 
 void testMatrixMultiply2()
 {
-	int m_s = 4;
+	int m_s = 10;
 	dReal A[m_s * m_s], B[m_s * m_s], C[m_s * m_s];
 
 	makeIdMatrix(A, m_s, 1);
