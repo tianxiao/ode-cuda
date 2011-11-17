@@ -8,6 +8,8 @@
 #include "util.h"
 #include "config.h"
 
+#define BLOCK_SIZE 2
+
 void cuda_checkError(const char *msg)
 {
 	cudaError_t err = cudaGetLastError();
@@ -116,8 +118,81 @@ void cuda_dSetValue(dReal *dev_a, int n, dReal value)
 	setvalue<<<n,1>>>(dev_a, n, value);
 }
 
-void cuda_dMultiply0(dReal *dev_A, const dReal *dev_B, const dReal *dev_c, int p, int q, int r)
+typedef struct {
+	int width;
+	int height;
+	int stride;
+	dReal *elements;
+} cuda_Matrix;
+
+__device__ dReal GetElement(cuda_Matrix A, int row, int col)
 {
+	return A.elements[row * A.stride + col];
+}
+
+__device__ void SetElement(cuda_Matrix A, int row, int col, dReal val)
+{
+	A.elements[row * A.stride + col] = val;
+}
+
+__device__ cuda_Matrix GetSubMatrix(cuda_Matrix A, int row, int col)
+{
+	cuda_Matrix A_sub;
+	A_sub.width = BLOCK_SIZE;
+	A_sub.height = BLOCK_SIZE;
+	A_sub.stride = A.stride;
+	A_sub.elements = &A.elements[A.stride * BLOCK_SIZE * row + BLOCK_SIZE * col];
+	return A_sub;
+}
+
+__global__ void MatMulKernel(cuda_Matrix A, cuda_Matrix B, cuda_Matrix C)
+{
+	int blockRow = blockIdx.y;
+	int blockCol = blockIdx.x;
+
+	cuda_Matrix C_sub = GetSubMatrix(C, blockRow, blockCol);
+	
+	dReal C_val = 0;
+
+	int row = threadIdx.y;
+	int col = threadIdx.x;
+
+	for (int m = 0; m < (A.width / BLOCK_SIZE); ++m) {
+		cuda_Matrix A_sub = GetSubMatrix(A, blockRow, m);
+		cuda_Matrix B_sub = GetSubMatrix(B, m, blockRow);
+		__shared__ dReal As[BLOCK_SIZE][BLOCK_SIZE];
+		__shared__ dReal Bs[BLOCK_SIZE][BLOCK_SIZE];
+		As[row][col] = GetElement(A_sub, row, col);
+		Bs[row][col] = GetElement(B_sub, row, col);
+		__syncthreads();
+		for (int e = 0; e < BLOCK_SIZE; ++e) {
+			C_val += As[row][e] * Bs[e][col];
+		}
+		__syncthreads();
+	}
+	SetElement(C_sub, row, col, C_val);
+}
+
+void cuda_dMultiply0(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, int q, int r)
+{
+	cuda_Matrix A;
+	A.width = r;
+	A.height = p;
+	A.stride = 1;
+	A.elements = dev_A;
+	cuda_Matrix B;
+	B.width = q;
+	B.height = p;
+	B.stride = 1;
+	B.elements = dev_B;
+	cuda_Matrix C;
+	C.width = r;
+	C.height = q;
+	C.stride = 1;
+	C.elements = dev_C;
+	dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE);
+	dim3 dimGrid(B.width / dimBlock.x, A.height / dimBlock.y);
+	MatMulKernel<<<dimGrid, dimBlock>>>(B, C, A);
 }
 
 void cuda_dMultiply1(dReal *dev_A, const dReal *dev_B, const dReal *dev_c, int p, int q, int r)
