@@ -265,27 +265,25 @@ void cuda_dMultiply0(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, int q, int
 	cuda_Matrix A;
 	A.width = r;
 	A.height = p;
-	//A.stride = r;
-	A.stride = A.height;
+	A.stride = r;
 	A.elements = dev_A;
 
 	cuda_Matrix B;
 	B.width = r;
 	B.height = p;
-	//B.stride = r;
-	B.stride = B.width;
+	B.stride = r;
 	B.elements = dev_B;
 
 	cuda_Matrix C;
 	C.width = r;
 	C.height = q;
-	//C.stride = r;
-	C.stride = C.width;
+	C.stride = r;
 	C.elements = dev_C;
 
-	//dim3 dimBlock(block_size, block_size);
-	//dim3 dimGrid(B.width / dimBlock.x, A.height / dimBlock.y);
-	//MatMulKernel<<<dimGrid, dimBlock>>>(B, C, A);
+	dim3 dimBlock(block_size, block_size);
+	dim3 dimGrid(B.width / dimBlock.x, A.height / dimBlock.y);
+	MatMulKernel<2><<<dimGrid, dimBlock>>>(B, C, A);
+	/*
 	unsigned int uiWC, uiHC;
 	uiWC = 2 * block_size;
 	uiHC = 4 * block_size;
@@ -296,6 +294,7 @@ void cuda_dMultiply0(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, int q, int
 	} else {
 		matrixMul<4><<< grid, threads >>>(dev_B, dev_C, dev_A, r, r);
 	}
+	*/
 }
 
 void cuda_dMultiply1(dReal *dev_A, const dReal *dev_B, const dReal *dev_c, int p, int q, int r)
