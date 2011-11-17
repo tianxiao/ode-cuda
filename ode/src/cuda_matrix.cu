@@ -162,10 +162,8 @@ template <int BLOCK_SIZE> __global__ void MatMulKernel(cuda_Matrix A, cuda_Matri
 	int col = threadIdx.x;
 
 	for (int m = 0; m < ((A.width + 1) / BLOCK_SIZE); ++m) {
-		cuda_Matrix A_sub;
-		cuda_Matrix B_sub;
-		A_sub = GetSubMatrix<BLOCK_SIZE>(A, blockRow, m);
-		B_sub = GetSubMatrix<BLOCK_SIZE>(B, m, blockCol);
+		cuda_Matrix A_sub = GetSubMatrix<BLOCK_SIZE>(A, blockRow, m);
+		cuda_Matrix B_sub = GetSubMatrix<BLOCK_SIZE>(B, m, blockCol);
 		__shared__ dReal As[BLOCK_SIZE][BLOCK_SIZE];
 		__shared__ dReal Bs[BLOCK_SIZE][BLOCK_SIZE];
 		As[row][col] = GetElement(A_sub, row, col);
