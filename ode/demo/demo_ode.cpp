@@ -22,6 +22,7 @@
 
 #include <setjmp.h>
 #include <ode/ode.h>
+#include <assert.h>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4244 4305)  // for VC++, no precision loss complaints
@@ -179,20 +180,6 @@ void testSetZero()
   printf ("\tpassed\n");
 }
 
-void cuda_testSetZero()
-{
-  HEADER;
-  dReal a[100];
-  dMakeRandomVector (a,100,1.0);
-  cuda_dSetZero (a,100);
-  for (int i=0; i<100; i++) if (a[i] != 0.0) {
-    printf ("\tFAILED\n");
-    return;
-  }
-  printf ("\tpassed\n");
-}
-
-
 void testNormalize3()
 {
   HEADER;
@@ -265,15 +252,29 @@ void testMatrixMultiply()
   for (i=0; i<3; i++) A[i] = i+2;
   for (i=0; i<3; i++) A[i+4] = i+3+2;
   for (i=0; i<12; i++) B[i] = i+8;
+
   dSetZero (A2,12);
   for (i=0; i<6; i++) A2[i+2*(i/2)] = A[i+i/3];
   dSetZero (B2,16);
   for (i=0; i<12; i++) B2[i+i/3] = B[i];
 
+  dReal *dev_A = cuda_copyToDevice(A, 8);
+  dReal *dev_B = cuda_copyToDevice(B, 12);
+  dReal *dev_C = cuda_copyToDevice(C, 8);
+  dReal *dev_A2 = cuda_copyToDevice(A2, 12);
+  dReal *dev_B2 = cuda_copyToDevice(B2, 12);
+  dReal host_C[8];
+
   dMultiply0 (C,A,B,2,3,4);
   if (C[0] != 116 || C[1] != 125 || C[2] != 134 || C[3] != 143 ||
       C[4] != 224 || C[5] != 242 || C[6] != 260 || C[7] != 278)
     printf ("\tFAILED (1)\n"); else printf ("\tpassed (1)\n");
+
+  cuda_dMultiply0 (dev_C,dev_A,dev_B,2,3,4);
+  cuda_copyFromDevice(dev_C, host_C, 8);
+  if (host_C[0] != 116 || host_C[1] != 125 || host_C[2] != 134 || host_C[3] != 143 ||
+      host_C[4] != 224 || host_C[5] != 242 || host_C[6] != 260 || host_C[7] != 278)
+    printf ("\tFAILED (C1)\n"); else printf ("\tpassed (C1)\n");
 
   dMultiply1 (C,A2,B,2,3,4);
   if (C[0] != 160 || C[1] != 172 || C[2] != 184 || C[3] != 196 ||
@@ -284,6 +285,63 @@ void testMatrixMultiply()
   if (C[0] != 83 || C[1] != 110 || C[2] != 137 || C[3] != 164 ||
       C[4] != 164 || C[5] != 218 || C[6] != 272 || C[7] != 326)
     printf ("\tFAILED (3)\n"); else printf ("\tpassed (3)\n");
+}
+
+
+void testMatrixMultiply2()
+{
+	dReal A[16], B[16], C[16];
+	for (int row = 0; row<4; row++) {
+		for (int col = 0; col<4; col++) {
+
+			if (row == col) {
+				A[row*4+col] = 2;
+				printf("2, ");
+			} else {
+				A[row*4+col] = 0;
+				printf("0, ");
+			}
+		}
+		printf("\n");
+	}
+	for (int i=0; i<16; i++) B[i] = i;
+	printf("B1:\n");
+	for (int row=0; row<4; row++) {
+		for (int col=0; col<4; col++)
+			printf("%d, ",(int)B[row*4+col]);
+		printf("\n");
+	}
+	dSetZero(C,16);
+	printf("C1:\n");
+	for (int row=0; row<4; row++) {
+		for (int col=0; col<4; col++)
+			printf("%d, ",(int)C[row*4+col]);
+		printf("\n");
+	}
+	dReal *dev_A = cuda_copyToDevice(A, 16);
+	dReal *dev_B = cuda_copyToDevice(B, 16);
+	dReal *dev_C = cuda_copyToDevice(C, 16);
+	cuda_dMultiply0(dev_C, dev_A, dev_B, 4, 4, 4);
+	cuda_copyFromDevice(dev_B, B, 16);
+	cuda_copyFromDevice(dev_C, C, 16);
+//	for (int i=0; i<16; i++) {
+//		assert(B[i] == C[i]);
+//	}
+	printf("B2:\n");
+	for (int row=0; row<4; row++) {
+		for (int col=0; col<4; col++)
+			printf("%d, ",(int)B[row*4+col]);
+		printf("\n");
+	}
+	printf("C2:\n");
+	for (int row=0; row<4; row++) {
+		for (int col=0; col<4; col++)
+			printf("%d, ",(int)C[row*4+col]);
+		printf("\n");
+	}
+	cuda_freeFromDevice(dev_A);
+	cuda_freeFromDevice(dev_B);
+	cuda_freeFromDevice(dev_C);
 }
 
 
@@ -1120,9 +1178,10 @@ int main()
   testSetZero();
   testNormalize3();
   //testReorthonormalize();     ... not any more
-  testPlaneSpace();
-  testMatrixMultiply();
-  testSmallMatrixMultiply();
+  testPlaneSpace();*/
+//  testMatrixMultiply();
+  testMatrixMultiply2();
+/*  testSmallMatrixMultiply();
   testCholeskyFactorization();
   testCholeskySolve();
   testInvertPDMatrix();
@@ -1138,7 +1197,6 @@ int main()
   dTestMatrixComparison();
   dTestSolveLCP2();*/
   cuda_testMemcpy();
-  cuda_testSetZero();
   // dTestDataStructures();
   dCloseODE();
   return 0;

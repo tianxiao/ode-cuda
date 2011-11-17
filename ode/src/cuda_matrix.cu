@@ -8,7 +8,7 @@
 #include "util.h"
 #include "config.h"
 
-#define BLOCK_SIZE 2
+#define BLOCK_SIZE 4
 
 void cuda_checkError(const char *msg)
 {
@@ -56,14 +56,14 @@ dReal *cuda_copyToDevice(dReal *a, int n)
 	cudaMalloc((void**) &dev_a, sizeof(dReal)*n);
 	cuda_checkError("malloc");
 	cudaMemcpy(dev_a, a, sizeof(dReal)*n, cudaMemcpyHostToDevice);
-	cuda_checkError("memcpy");
+	cuda_checkError("memcpy h to d");
 	return dev_a;
 }
 
 dReal *cuda_copyFromDevice(dReal *dev_a, dReal *a, int n)
 {
 	cudaMemcpy(a, dev_a, sizeof(float)*n, cudaMemcpyDeviceToHost);
-	cuda_checkError("memcpy");
+	cuda_checkError("memcpy d to h");
 	return a;
 }
 
@@ -96,14 +96,14 @@ void cuda_dSetZero2(dReal *a, int n)
 
 	//copy array from CPU to GPU (not necessary)
 	cudaMemcpy(dev_a, a, n*sizeof(dReal), cudaMemcpyHostToDevice);
-	cuda_checkError("memcpy");
+	cuda_checkError("dSetZero2; memcpy h to d");
 
 	//fill array with 0 on the gpu
 	setzero<<<n,1>>>(dev_a, n);
 
 	//copy array of 0's 'a' from GPU to CPU
 	cudaMemcpy(a, dev_a, n*sizeof(dReal), cudaMemcpyDeviceToHost);
-	cuda_checkError("memcpy");
+	cuda_checkError("dSetZero2; memcpy d to h");
 
 	cudaFree(dev_a);		
 }
@@ -178,18 +178,21 @@ void cuda_dMultiply0(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, int q, int
 	cuda_Matrix A;
 	A.width = r;
 	A.height = p;
-	A.stride = 1;
+	A.stride = r;
 	A.elements = dev_A;
+
 	cuda_Matrix B;
-	B.width = q;
+	B.width = r;
 	B.height = p;
-	B.stride = 1;
+	B.stride = q;
 	B.elements = dev_B;
+
 	cuda_Matrix C;
 	C.width = r;
 	C.height = q;
-	C.stride = 1;
+	C.stride = r;
 	C.elements = dev_C;
+
 	dim3 dimBlock(BLOCK_SIZE, BLOCK_SIZE);
 	dim3 dimGrid(B.width / dimBlock.x, A.height / dimBlock.y);
 	MatMulKernel<<<dimGrid, dimBlock>>>(B, C, A);
