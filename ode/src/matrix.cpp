@@ -53,8 +53,10 @@ void dMultiply0 (dReal *A, const dReal *B, const dReal *C, int p, int q, int r)
 {
   int i,j,k,qskip,rskip,rpad;
   dAASSERT (A && B && C && p>0 && q>0 && r>0);
-  qskip = dPAD(q);
-  rskip = dPAD(r);
+  /*qskip = dPAD(q);
+  rskip = dPAD(r);*/
+  qskip = q;
+  rskip = r;
   rpad = rskip - r;
   dReal sum;
   const dReal *b,*c,*bb;

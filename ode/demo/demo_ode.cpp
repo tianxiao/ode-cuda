@@ -262,7 +262,7 @@ void testMatrixMultiply()
   dReal *dev_B = cuda_copyToDevice(B, 12);
   dReal *dev_C = cuda_copyToDevice(C, 8);
   dReal *dev_A2 = cuda_copyToDevice(A2, 12);
-  dReal *dev_B2 = cuda_copyToDevice(B2, 12);
+  dReal *dev_B2 = cuda_copyToDevice(B2, 16);
   dReal host_C[8];
 
   dMultiply0 (C,A,B,2,3,4);
@@ -287,7 +287,7 @@ void testMatrixMultiply()
     printf ("\tFAILED (3)\n"); else printf ("\tpassed (3)\n");
 }
 
-void printMatrix(char *name, dReal *a, int w, int h)
+void printMatrix(char *name, dReal *a, int h, int w)
 {
 	printf("%s:\n", name);
 	for (int row=0; row<h; row++) {
@@ -311,32 +311,38 @@ void makeIdMatrix(dReal *a, int s, int n)
 
 void testMatrixMultiply2()
 {
-	int m_s = 11;
-	dReal A[m_s * m_s], B[m_s * m_s], C[m_s * m_s];
+	dReal A[7 * 5], B[5 * 7], C[7 * 7];
+	dReal C2[7 * 7];
 
-	makeIdMatrix(A, m_s, 1);
-	printMatrix("A1", A, m_s, m_s);
+	dSetZero(A, 7 * 5);
+//	makeIdMatrix(A, 5, 5);
+	for (int i=0; i<7*5; i++) A[i] = i % 2;
+	printMatrix("A1", A, 7, 5);
 
-	for (int i=0; i<m_s*m_s; i++) B[i] = i;
-	printMatrix("B1", B, m_s, m_s);
+	for (int i=0; i<5*7; i++) B[i] = i;
+	printMatrix("B1", B, 5, 7);
 
-	dSetZero(C,m_s * m_s);
-	printMatrix("C1", C, m_s, m_s);
+	dSetZero(C, 7 * 7);
+	dSetZero(C2, 7 * 7);
+	printMatrix("C1", C, 7, 7);
+	printMatrix("C1_ODE", C2, 7, 7);
 
-	dReal *dev_A = cuda_copyToDevice(A, m_s * m_s);
-	dReal *dev_B = cuda_copyToDevice(B, m_s * m_s);
-	dReal *dev_C = cuda_copyToDevice(C, m_s * m_s);
+	dReal *dev_B = cuda_copyToDevice(B, 5 * 7);
+	dReal *dev_A = cuda_copyToDevice(A, 7 * 5);
+	dReal *dev_C = cuda_copyToDevice(C, 7 * 7);
 
-	cuda_dMultiply0(dev_C, dev_A, dev_B, m_s, m_s, m_s);
+	cuda_dMultiply0(dev_C, dev_A, dev_B, 7, 5, 7);
+	dMultiply0(C2, A, B, 7, 5, 7);
 
-	cuda_copyFromDevice(dev_B, B, m_s * m_s);
-	cuda_copyFromDevice(dev_C, C, m_s * m_s);
+	cuda_copyFromDevice(dev_B, B, 5 * 7);
+	cuda_copyFromDevice(dev_C, C, 7 * 7);
 
-	printMatrix("B2", B, m_s, m_s);
-	printMatrix("C2", C, m_s, m_s);
+	printMatrix("B2", B, 5, 7);
+	printMatrix("C2", C, 7, 7);
+	printMatrix("C2_ODE", C2, 7, 7);
 
-	for (int i=0; i<16; i++) {
-		assert(B[i] == C[i]);
+	for (int i=0; i<7 * 7; i++) {
+		assert(C[i] == C2[i]);
 	}
 
 	cuda_freeFromDevice(dev_A);

@@ -161,7 +161,7 @@ template <int BLOCK_SIZE> __global__ void MatMulKernel(cuda_Matrix A, cuda_Matri
 	int row = threadIdx.y;
 	int col = threadIdx.x;
 
-	for (int m = 0; m < ((A.width + 1) / BLOCK_SIZE); ++m) {
+	for (int m = 0; m < ((C.width + 1) / BLOCK_SIZE); ++m) {
 		cuda_Matrix A_sub = GetSubMatrix<BLOCK_SIZE>(A, blockRow, m);
 		cuda_Matrix B_sub = GetSubMatrix<BLOCK_SIZE>(B, m, blockCol);
 		__shared__ dReal As[BLOCK_SIZE][BLOCK_SIZE];
@@ -171,8 +171,9 @@ template <int BLOCK_SIZE> __global__ void MatMulKernel(cuda_Matrix A, cuda_Matri
 		__syncthreads();
 		for (int e = 0; e < BLOCK_SIZE; ++e) {
 			if( BLOCK_SIZE * blockRow + row < A.height && BLOCK_SIZE * blockCol + col < B.width 
-				&& BLOCK_SIZE * m + e < B.height && BLOCK_SIZE * m + e < A.width)
+				&& BLOCK_SIZE * m + e < B.height && BLOCK_SIZE * m + e < A.width) {
 				C_val += As[row][e] * Bs[e][col];
+			}
 		}
 		__syncthreads();
 	}
@@ -190,9 +191,9 @@ void cuda_dMultiply0(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, int q, int
 	A.elements = dev_A;
 
 	cuda_Matrix B;
-	B.width = r;
+	B.width = q;
 	B.height = p;
-	B.stride = r;
+	B.stride = q;
 	B.elements = dev_B;
 
 	cuda_Matrix C;
@@ -202,7 +203,7 @@ void cuda_dMultiply0(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, int q, int
 	C.elements = dev_C;
 
 	dim3 dimBlock(block_size, block_size);
-	dim3 dimGrid(B.width + 1/ dimBlock.x, A.height + 1/ dimBlock.y);
+	dim3 dimGrid((B.width + 2)/ dimBlock.x, (A.height + 1)/ dimBlock.y);
 	MatMulKernel<2><<<dimGrid, dimBlock>>>(B, C, A);
 }
 
