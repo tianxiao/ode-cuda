@@ -202,7 +202,7 @@ void cuda_dMultiply0(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, int q, int
 	C.elements = dev_C;
 
 	dim3 dimBlock(block_size, block_size);
-	dim3 dimGrid(B.width / dimBlock.x, A.height / dimBlock.y);
+	dim3 dimGrid(B.width + 1/ dimBlock.x, A.height + 1/ dimBlock.y);
 	MatMulKernel<2><<<dimGrid, dimBlock>>>(B, C, A);
 }
 
