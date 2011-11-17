@@ -130,6 +130,12 @@ __device__ dReal GetElement(cuda_Matrix A, int row, int col)
 	return A.elements[row * A.stride + col];
 }
 
+//gets the row column element of A^T
+__device__ dReal GetTransposeElement(cuda_Matrix A, int row, int col)
+{
+	return A.elements[col * A.stride + row];
+}
+
 __device__ void SetElement(cuda_Matrix A, int row, int col, dReal val)
 {
 	A.elements[row * A.stride + col] = val;
