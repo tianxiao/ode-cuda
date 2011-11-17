@@ -171,7 +171,7 @@ template <int BLOCK_SIZE> __global__ void MatMulKernel(cuda_Matrix A, cuda_Matri
 		__syncthreads();
 		for (int e = 0; e < BLOCK_SIZE; ++e) {
 			if( BLOCK_SIZE * blockRow + row < A.height && BLOCK_SIZE * blockCol + col < B.width 
-				&& BLOCK_SIZE * blockRow + e < B.height && BLOCK_SIZE * blockCol + e < A.width)
+				&& BLOCK_SIZE * m + e < B.height && BLOCK_SIZE * m + e < A.width)
 				C_val += As[row][e] * Bs[e][col];
 		}
 		__syncthreads();
