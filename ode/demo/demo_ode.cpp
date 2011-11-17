@@ -287,58 +287,58 @@ void testMatrixMultiply()
     printf ("\tFAILED (3)\n"); else printf ("\tpassed (3)\n");
 }
 
+void printMatrix(char *name, dReal *a, int w, int h)
+{
+	printf("%s:\n", name);
+	for (int row=0; row<h; row++) {
+		for (int col=0; col<w; col++)
+			printf("%d, ", (int) a[row*w+col]);
+		printf("\n");
+	}
+	printf("\n");
+}
+
+void makeIdMatrix(dReal *a, int s, int n)
+{
+	for (int row=0; row<s; row++) {
+		for (int col=0; col<s; col++) {
+			if (row==col) { a[row*s+col] = n; }
+			else { a[row*s+col] = 0; }
+		}
+	}
+}
+
 
 void testMatrixMultiply2()
 {
-	dReal A[16], B[16], C[16];
-	for (int row = 0; row<4; row++) {
-		for (int col = 0; col<4; col++) {
+	int m_s = 4;
+	dReal A[m_s * m_s], B[m_s * m_s], C[m_s * m_s];
 
-			if (row == col) {
-				A[row*4+col] = 2;
-				printf("2, ");
-			} else {
-				A[row*4+col] = 0;
-				printf("0, ");
-			}
-		}
-		printf("\n");
+	makeIdMatrix(A, m_s, 1);
+	printMatrix("A1", A, m_s, m_s);
+
+	for (int i=0; i<m_s*m_s; i++) B[i] = i;
+	printMatrix("B1", B, m_s, m_s);
+
+	dSetZero(C,m_s * m_s);
+	printMatrix("C1", C, m_s, m_s);
+
+	dReal *dev_A = cuda_copyToDevice(A, m_s * m_s);
+	dReal *dev_B = cuda_copyToDevice(B, m_s * m_s);
+	dReal *dev_C = cuda_copyToDevice(C, m_s * m_s);
+
+	cuda_dMultiply0(dev_C, dev_A, dev_B, m_s, m_s, m_s);
+
+	cuda_copyFromDevice(dev_B, B, m_s * m_s);
+	cuda_copyFromDevice(dev_C, C, m_s * m_s);
+
+	printMatrix("B2", B, m_s, m_s);
+	printMatrix("C2", C, m_s, m_s);
+
+	for (int i=0; i<16; i++) {
+		assert(B[i] == C[i]);
 	}
-	for (int i=0; i<16; i++) B[i] = i;
-	printf("B1:\n");
-	for (int row=0; row<4; row++) {
-		for (int col=0; col<4; col++)
-			printf("%d, ",(int)B[row*4+col]);
-		printf("\n");
-	}
-	dSetZero(C,16);
-	printf("C1:\n");
-	for (int row=0; row<4; row++) {
-		for (int col=0; col<4; col++)
-			printf("%d, ",(int)C[row*4+col]);
-		printf("\n");
-	}
-	dReal *dev_A = cuda_copyToDevice(A, 16);
-	dReal *dev_B = cuda_copyToDevice(B, 16);
-	dReal *dev_C = cuda_copyToDevice(C, 16);
-	cuda_dMultiply0(dev_C, dev_A, dev_B, 4, 4, 4);
-	cuda_copyFromDevice(dev_B, B, 16);
-	cuda_copyFromDevice(dev_C, C, 16);
-//	for (int i=0; i<16; i++) {
-//		assert(B[i] == C[i]);
-//	}
-	printf("B2:\n");
-	for (int row=0; row<4; row++) {
-		for (int col=0; col<4; col++)
-			printf("%d, ",(int)B[row*4+col]);
-		printf("\n");
-	}
-	printf("C2:\n");
-	for (int row=0; row<4; row++) {
-		for (int col=0; col<4; col++)
-			printf("%d, ",(int)C[row*4+col]);
-		printf("\n");
-	}
+
 	cuda_freeFromDevice(dev_A);
 	cuda_freeFromDevice(dev_B);
 	cuda_freeFromDevice(dev_C);
