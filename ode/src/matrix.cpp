@@ -100,8 +100,10 @@ void dMultiply2 (dReal *A, const dReal *B, const dReal *C, int p, int q, int r)
   dReal sum;
   const dReal *bb,*cc;
   dAASSERT (A && B && C && p>0 && q>0 && r>0);
-  rpad = dPAD(r) - r;
-  qskip = dPAD(q);
+  //rpad = dPAD(r) - r;
+  //qskip = dPAD(q);
+  rpad = r;
+  qskip = q;
   bb = B;
   for (i=p; i; i--) {
     cc = C;

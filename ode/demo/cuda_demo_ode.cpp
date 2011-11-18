@@ -1239,6 +1239,7 @@ int main()
 //  testMatrixMultiply3();
   testMatrixMultiply4();
   testMatrixMultiply5();
+  testMatrixMultiply();
 // testMatrixMultiply();
 /*  testSmallMatrixMultiply();
   testCholeskyFactorization();
