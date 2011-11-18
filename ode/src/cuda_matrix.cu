@@ -196,7 +196,7 @@ ODE_API void cuda_dMultiply1(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, in
 ODE_API void cuda_dMultiply2(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, int q, int r)
 {
 	const int block_size = 8;
-	printf("cuda_dMultiply1\n");
+	printf("cuda_dMultiply2\n");
 
 	cuda_Matrix A;
 	A.width = r;
