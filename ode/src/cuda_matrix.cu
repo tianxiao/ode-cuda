@@ -291,15 +291,15 @@ ODE_API void cuda_dMultiply1(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, in
 
 	dim3 dimBlock(block_size, block_size);
 	printf("\tdimBlock.x: %d\n\tdimBlock.y: %d\n", dimBlock.x, dimBlock.y);
-	dim3 dimGrid((C.height + (block_size - 1)) / dimBlock.x, (C.width + (block_size - 1)) / dimBlock.y);
+	dim3 dimGrid((C.width + (block_size - 1)) / dimBlock.x, (C.height + (block_size - 1)) / dimBlock.y);
 	printf("\tGrid.x: %d\n\tGrid.y: %d\n", dimGrid.x, dimGrid.y);
 
-	cudaPrintfInit();
+	//cudaPrintfInit();
 
 	MatMulKernel1<block_size><<<dimGrid, dimBlock>>>(B, C, A);
 
-	cudaPrintfDisplay(stdout, true);
-	cudaPrintfEnd();
+	//cudaPrintfDisplay(stdout, true);
+	//cudaPrintfEnd();
 }
 
 /* computes A = B*(C^T)

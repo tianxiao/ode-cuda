@@ -350,27 +350,28 @@ void testMatrixMultiply4()
 /* We're computing C = (A^T)*B
  * row and col are the height and width of A, so C is a col*col matrix.
  * Thus row corresponds to q, col to p and r */
-	int row = 5;
+	int p = 5; int q = 3; int r = 7;
+	int row = q;
 	int col = 2;
-	dReal A[row * col], B[row * col], C[col * col], host_C[col * col];
-	for (int i = 0; i < row * col; ++i) { A[i] = i+1; }
-	printMatrix("A", A, row, col);
-	for (int i = 0; i < row * col; ++i) { B[i] = i+1; }
-	printMatrix("B", B, row, col);
-	dSetZero(C, col * col);
-	printMatrix("C", C, col, col);
-	dReal *dev_A = cuda_copyToDevice(A, row * col);
-	dReal *dev_B = cuda_copyToDevice(B, row * col);
-	dReal *dev_C = cuda_copyToDevice(C, col * col);
-	dMultiply1(C, A, B, col, row, col);
-	printMatrix("C_ODE", C, col, col);
-	cuda_dMultiply1(dev_C, dev_A, dev_B, col, row, col);
-	cuda_copyFromDevice(dev_C, host_C, col * col);
-	printMatrix("C_CUD", host_C, col, col);
+	dReal A[q * p], B[q * r], C[p * r], host_C[p * r];
+	for (int i = 0; i < q * p; ++i) { A[i] = i+1; }
+	printMatrix("A", A, q, p);
+	for (int i = 0; i < q * r; ++i) { B[i] = i+1; }
+	printMatrix("B", B, q, r);
+	dSetZero(C, p * r);
+	printMatrix("C", C, p, q);
+	dReal *dev_A = cuda_copyToDevice(A, q * p);
+	dReal *dev_B = cuda_copyToDevice(B, q * r);
+	dReal *dev_C = cuda_copyToDevice(C, p * r);
+	dMultiply1(C, A, B, p, q, r);
+	printMatrix("C_ODE", C, p, r);
+	cuda_dMultiply1(dev_C, dev_A, dev_B, p, q, r);
+	cuda_copyFromDevice(dev_C, host_C, p * r);
+	printMatrix("C_CUD", host_C, p, r);
 	cuda_freeFromDevice(dev_A);
 	cuda_freeFromDevice(dev_B);
 	cuda_freeFromDevice(dev_C);
-	for (int i=0; i<col * col; i++) {
+	for (int i=0; i<p * r; i++) {
 		assert(C[i] == host_C[i]);
 	}
 }
@@ -1236,7 +1237,7 @@ int main()
   //testReorthonormalize();     ... not any more
   testPlaneSpace();*/
 //  testMatrixMultiply3();
-  testMatrixMultiply5();
+  testMatrixMultiply4();
 // testMatrixMultiply();
 /*  testSmallMatrixMultiply();
   testCholeskyFactorization();
