@@ -347,6 +347,9 @@ void testMatrixMultiply3()
 
 void testMatrixMultiply4()
 {
+/* We're computing C = (A^T)*B
+ * row and col are the height and width of A, so C is a col*col matrix.
+ * Thus row corresponds to q, col to p and r */
 	int row = 5;
 	int col = 3;
 	dReal A[row * col], B[row * col], C[col * col], host_C[col * col];
