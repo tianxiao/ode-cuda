@@ -80,8 +80,10 @@ void dMultiply1 (dReal *A, const dReal *B, const dReal *C, int p, int q, int r)
   int i,j,k,pskip,rskip;
   dReal sum;
   dAASSERT (A && B && C && p>0 && q>0 && r>0);
-  pskip = dPAD(p);
-  rskip = dPAD(r);
+  //pskip = dPAD(p);
+  //rskip = dPAD(r);
+  pskip = p;
+  rskip = r;
   for (i=0; i<p; i++) {
     for (j=0; j<r; j++) {
       sum = 0;

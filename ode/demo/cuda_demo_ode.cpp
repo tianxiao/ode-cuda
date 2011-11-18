@@ -345,6 +345,33 @@ void testMatrixMultiply3()
 	}
 }
 
+void testMatrixMultiply4()
+{
+	int row = 7;
+	int col = 5;
+	dReal A[row * col], B[row * col], C[col * col], host_C[col * col];
+	for (int i = 0; i < row * col; ++i) { A[i] = i+1; }
+	printMatrix("A", A, row, col);
+	for (int i = 0; i < row * col; ++i) { B[i] = i+1; }
+	printMatrix("B", B, row, col);
+	dSetZero(C, col * col);
+	printMatrix("C", C, col, col);
+	dReal *dev_A = cuda_copyToDevice(A, row * col);
+	dReal *dev_B = cuda_copyToDevice(B, row * col);
+	dReal *dev_C = cuda_copyToDevice(C, row * row);
+	dMultiply1(C, A, B, row, row, col);
+	printMatrix("C_ODE", C, col, col);
+	cuda_dMultiply1(dev_C, dev_A, dev_B, row, row, col);
+	cuda_copyFromDevice(dev_C, host_C, col * col);
+	printMatrix("C_CUD", host_C, col, col);
+	cuda_freeFromDevice(dev_A);
+	cuda_freeFromDevice(dev_B);
+	cuda_freeFromDevice(dev_C);
+	for (int i=0; i<col * col; i++) {
+		assert(C[i] == host_C[i]);
+	}
+}
+
 void testSmallMatrixMultiply()
 {
   dMatrix3 A,B,C,A2;
@@ -1178,7 +1205,9 @@ int main()
   testNormalize3();
   //testReorthonormalize();     ... not any more
   testPlaneSpace();*/
-  testMatrixMultiply3();
+  testMatrixMultiply();
+//  testMatrixMultiply3();
+//  testMatrixMultiply4();
 /*  testSmallMatrixMultiply();
   testCholeskyFactorization();
   testCholeskySolve();

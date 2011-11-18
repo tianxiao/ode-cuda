@@ -126,12 +126,12 @@ template <int BLOCK_SIZE> __global__ void MatMulKernel1(cuda_Matrix A, cuda_Matr
 	int col = threadIdx.x;
 
 	for (int m = 0; m < ((C.width + BLOCK_SIZE - 1) / BLOCK_SIZE); ++m) {
-		cuda_Matrix A_sub = GetSubMatrix<BLOCK_SIZE>(A, blockRow, m);
+		cuda_Matrix A_sub = GetSubMatrix<BLOCK_SIZE>(A, m, blockRow);
 		cuda_Matrix B_sub = GetSubMatrix<BLOCK_SIZE>(B, m, blockCol);
 		__shared__ dReal As[BLOCK_SIZE][BLOCK_SIZE];
 		__shared__ dReal Bs[BLOCK_SIZE][BLOCK_SIZE];
-		if (BLOCK_SIZE * blockRow + row < A.height && BLOCK_SIZE * m + col < A.width) {
-			As[row][col] = GetElement(A_sub, row, col);
+		if (BLOCK_SIZE * m + col < A.height && BLOCK_SIZE * blockRow + row < A.width) {
+			As[row][col] = GetTransposeElement(A_sub, row, col);
 			cuPrintf("A row: %d\n", row);
 			cuPrintf("A col: %d\n", col);
 		} else {
@@ -253,7 +253,7 @@ ODE_API void cuda_dMultiply0(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, in
 
 ODE_API void cuda_dMultiply1(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, int q, int r)
 {
-	const int block_size = 8;
+	const int block_size = 2;
 	printf("cuda_dMultiply1\n");
 
 	cuda_Matrix A;
