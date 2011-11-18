@@ -403,9 +403,8 @@ void testMatrixMultiply5()
 	}
 }
 
-void fat_matrix()
+void fat_matrix(int dim)
 {
-	int dim = 1000;
 	dReal *A = cuda_makeOnDevice(dim);
 	dReal *B = cuda_makeOnDevice(dim);
 	dReal *C = cuda_makeOnDevice(dim);
@@ -1245,7 +1244,7 @@ extern "C" void dTestMatrixComparison();
 extern "C" void dTestSolveLCP();
 
 
-int main()
+int main(int argc, char *argv[])
 {
 //  dInitODE();
 /*  testRandomNumberGenerator();
@@ -1277,7 +1276,7 @@ int main()
   dTestMatrixComparison();
   dTestSolveLCP();*/
   // dTestDataStructures();
-  fat_matrix();
+  fat_matrix(1000);
 //  dCloseODE();
   return 0;
 }

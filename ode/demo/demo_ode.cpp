@@ -240,9 +240,8 @@ void testPlaneSpace()
 #define MSIZE 21
 #define MSIZE4 24	// MSIZE rounded up to 4
 
-void fat_matrix()
+void fat_matrix(int dim)
 {
-	int dim = 1000;
 	dReal *A = (dReal *) malloc(sizeof(dReal)*dim*dim);
 	dReal *B = (dReal *) malloc(sizeof(dReal)*dim*dim);
 	dReal *C = (dReal *) malloc(sizeof(dReal)*dim*dim);
@@ -1115,9 +1114,9 @@ extern "C" void dTestMatrixComparison();
 extern "C" void dTestSolveLCP();
 
 
-int main()
+int main(int argc, char *argv[])
 {
-  dInitODE();
+//  dInitODE();
 /*  testRandomNumberGenerator();
   testInfinity();
   testPad();
@@ -1143,7 +1142,7 @@ int main()
   dTestMatrixComparison();
   dTestSolveLCP();*/
   // dTestDataStructures();
-  fat_matrix();
-  dCloseODE();
+  fat_matrix(1000);
+//  dCloseODE();
   return 0;
 }
