@@ -35,6 +35,7 @@ noinst_PROGRAMS = \
                 demo_motion \
                 demo_motor \
                 demo_ode \
+                cuda_demo_ode \
                 demo_piston \
                 demo_plane2d \
                 demo_slider \
@@ -66,6 +67,7 @@ demo_kinematic_SOURCES = demo_kinematic.cpp
 demo_motion_SOURCES = demo_motion.cpp
 demo_motor_SOURCES = demo_motor.cpp
 demo_ode_SOURCES = demo_ode.cpp
+cuda_demo_ode_SOURCES = cuda_demo_ode.cpp
 demo_piston_SOURCES = demo_piston.cpp
 demo_plane2d_SOURCES = demo_plane2d.cpp
 demo_slider_SOURCES = demo_slider.cpp
