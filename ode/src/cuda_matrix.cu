@@ -225,15 +225,15 @@ ODE_API void cuda_dMultiply0(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, in
 	printf("cuda_dMultiply0\n");
 
 	cuda_Matrix A;
-	A.width = r;
-	A.height = q;
-	A.stride = r;
+	A.width = q;
+	A.height = p;
+	A.stride = q;
 	A.elements = dev_A;
 
 	cuda_Matrix B;
-	B.width = q;
-	B.height = r;
-	B.stride = q;
+	B.width = r;
+	B.height = q;
+	B.stride = r;
 	B.elements = dev_B;
 
 	cuda_Matrix C;
@@ -269,15 +269,15 @@ ODE_API void cuda_dMultiply1(dReal *dev_C, dReal *dev_A, dReal *dev_B, int p, in
 	printf("cuda_dMultiply1\n");
 
 	cuda_Matrix A;
-	A.width = q;
-	A.height = p;
-	A.stride = q;
+	A.width = p;
+	A.height = q;
+	A.stride = p;
 	A.elements = dev_A;
 
 	cuda_Matrix B;
-	B.width = q;
-	B.height = p;
-	B.stride = q;
+	B.width = r;
+	B.height = q;
+	B.stride = r;
 	B.elements = dev_B;
 
 	cuda_Matrix C;
