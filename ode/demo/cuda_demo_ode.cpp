@@ -359,7 +359,7 @@ void testMatrixMultiply4()
 	for (int i = 0; i < q * r; ++i) { B[i] = i+1; }
 	printMatrix("B", B, q, r);
 	dSetZero(C, p * r);
-	printMatrix("C", C, p, q);
+	printMatrix("C", C, p, r);
 	dReal *dev_A = cuda_copyToDevice(A, q * p);
 	dReal *dev_B = cuda_copyToDevice(B, q * r);
 	dReal *dev_C = cuda_copyToDevice(C, p * r);
@@ -1238,6 +1238,7 @@ int main()
   testPlaneSpace();*/
 //  testMatrixMultiply3();
   testMatrixMultiply4();
+  testMatrixMultiply5();
 // testMatrixMultiply();
 /*  testSmallMatrixMultiply();
   testCholeskyFactorization();

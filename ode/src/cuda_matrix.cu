@@ -248,7 +248,7 @@ ODE_API void cuda_dMultiply0(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, in
 	dim3 dimBlock(block_size, block_size);
 	printf("\tdimBlock.x: %d\n\tdimBlock.y: %d\n", dimBlock.x, dimBlock.y);
 
-	dim3 dimGrid((C.width + (block_size - 1)) / dimBlock.x, (C.height + (block_size - 1)) / dimBlock.y);
+	dim3 dimGrid((A.width + (block_size - 1)) / dimBlock.x, (A.height + (block_size - 1)) / dimBlock.y);
 	//dim3 dimGrid((B.width + dimBlock.x) / dimBlock.x, (A.height + dimBlock.y) / dimBlock.y);
 	printf("\tGrid.x: %d\n\tGrid.y: %d\n", dimGrid.x, dimGrid.y);
 
@@ -291,7 +291,7 @@ ODE_API void cuda_dMultiply1(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, in
 
 	dim3 dimBlock(block_size, block_size);
 	printf("\tdimBlock.x: %d\n\tdimBlock.y: %d\n", dimBlock.x, dimBlock.y);
-	dim3 dimGrid((C.width + (block_size - 1)) / dimBlock.x, (C.height + (block_size - 1)) / dimBlock.y);
+	dim3 dimGrid((A.width + (block_size - 1)) / dimBlock.x, (A.height + (block_size - 1)) / dimBlock.y);
 	printf("\tGrid.x: %d\n\tGrid.y: %d\n", dimGrid.x, dimGrid.y);
 
 	//cudaPrintfInit();
