@@ -347,8 +347,8 @@ void testMatrixMultiply3()
 
 void testMatrixMultiply4()
 {
-	int row = 7;
-	int col = 5;
+	int row = 5;
+	int col = 3;
 	dReal A[row * col], B[row * col], C[col * col], host_C[col * col];
 	for (int i = 0; i < row * col; ++i) { A[i] = i+1; }
 	printMatrix("A", A, row, col);
@@ -1205,9 +1205,9 @@ int main()
   testNormalize3();
   //testReorthonormalize();     ... not any more
   testPlaneSpace();*/
-  testMatrixMultiply();
-//  testMatrixMultiply3();
-//  testMatrixMultiply4();
+  testMatrixMultiply3();
+  testMatrixMultiply4();
+ testMatrixMultiply();
 /*  testSmallMatrixMultiply();
   testCholeskyFactorization();
   testCholeskySolve();
