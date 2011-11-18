@@ -65,7 +65,7 @@ template <int BLOCK_SIZE> __device__ cuda_Matrix GetSubMatrix(cuda_Matrix A, int
 	return A_sub;
 }
 
-template <int BLOCK_SIZE> __global__ void MatMulKernel0(cuda_Matrix A, cuda_Matrix B, cuda_Matrix C)
+template <int BLOCK_SIZE> __global__ void MatMulKernel0(cuda_Matrix C, cuda_Matrix A, cuda_Matrix B)
 {
 	int blockRow = blockIdx.y;
 	int blockCol = blockIdx.x;
@@ -113,7 +113,7 @@ template <int BLOCK_SIZE> __global__ void MatMulKernel0(cuda_Matrix A, cuda_Matr
 	}
 }
 
-template <int BLOCK_SIZE> __global__ void MatMulKernel1(cuda_Matrix A, cuda_Matrix B, cuda_Matrix C)
+template <int BLOCK_SIZE> __global__ void MatMulKernel1(cuda_Matrix C, cuda_Matrix A, cuda_Matrix B)
 {
 	int blockRow = blockIdx.y;
 	int blockCol = blockIdx.x;
@@ -161,7 +161,7 @@ template <int BLOCK_SIZE> __global__ void MatMulKernel1(cuda_Matrix A, cuda_Matr
 	}
 }
 
-template <int BLOCK_SIZE> __global__ void MatMulKernel2(cuda_Matrix A, cuda_Matrix B, cuda_Matrix C)
+template <int BLOCK_SIZE> __global__ void MatMulKernel2(cuda_Matrix C, cuda_Matrix A, cuda_Matrix B)
 {
 	int blockRow = blockIdx.y;
 	int blockCol = blockIdx.x;
@@ -245,13 +245,13 @@ ODE_API void cuda_dMultiply0(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, in
 
 	//cudaPrintfInit();
 
-	MatMulKernel0<block_size><<<dimGrid, dimBlock>>>(B, C, A);
+	MatMulKernel0<block_size><<<dimGrid, dimBlock>>>(C, A, B);
 
 	//cudaPrintfDisplay(stdout, true);
 	//cudaPrintfEnd();
 }
 
-ODE_API void cuda_dMultiply1(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, int q, int r)
+ODE_API void cuda_dMultiply1(dReal *dev_C, dReal *dev_A, dReal *dev_B, int p, int q, int r)
 {
 	const int block_size = 8;
 	printf("cuda_dMultiply1\n");
@@ -283,7 +283,7 @@ ODE_API void cuda_dMultiply1(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, in
 	dim3 dimGrid((B.width + (block_size - 1)) / dimBlock.x, (A.height + (block_size - 1)) / dimBlock.y);
 	printf("\tGrid.x: %d\n\tGrid.y: %d\n", dimGrid.x, dimGrid.y);
 
-	MatMulKernel1<block_size><<<dimGrid, dimBlock>>>(B, C, A);
+	MatMulKernel1<block_size><<<dimGrid, dimBlock>>>(C, A, B);
 }
 
 ODE_API void cuda_dMultiply2(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, int q, int r)
@@ -318,6 +318,6 @@ ODE_API void cuda_dMultiply2(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, in
 	dim3 dimGrid((B.width + (block_size - 1)) / dimBlock.x, (A.height + (block_size - 1)) / dimBlock.y);
 	printf("\tGrid.x: %d\n\tGrid.y: %d\n", dimGrid.x, dimGrid.y);
 
-	MatMulKernel2<block_size><<<dimGrid, dimBlock>>>(B, C, A);
+	MatMulKernel2<block_size><<<dimGrid, dimBlock>>>(C, A, B);
 }
 
