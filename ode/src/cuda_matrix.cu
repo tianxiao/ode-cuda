@@ -8,6 +8,8 @@
 #include <ode/cuda_matrix.h>
 //#include "cuprintf.cu"
 
+#define BLOCKSIZE 4
+
 __global__ void setzero(dReal *a, int n)
 {
 	int tid = blockIdx.x;
@@ -164,7 +166,7 @@ template <int BLOCK_SIZE> __global__ void MatMulKernel1(cuda_Matrix A, cuda_Matr
 
 /* computes C = A*(B^T)
  * */
-template <int BLOCK_SIZE> __global__ void MatMulKernel2(cuda_Matrix A, cuda_Matrix B, cuda_Matrix C)
+template <int BLOCK_SIZE>__global__ void MatMulKernel2(cuda_Matrix A, cuda_Matrix B, cuda_Matrix C)
 {
 	int blockRow = blockIdx.y;
 	int blockCol = blockIdx.x;
@@ -214,7 +216,7 @@ template <int BLOCK_SIZE> __global__ void MatMulKernel2(cuda_Matrix A, cuda_Matr
  * A is pxr, B is pxq, C is qxr */
 ODE_API void cuda_dMultiply0(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, int q, int r)
 {
-	const int block_size = 8;
+	const int block_size = BLOCKSIZE;
 	//printf("cuda_dMultiply0\n");
 
 	cuda_Matrix A;
@@ -258,7 +260,7 @@ ODE_API void cuda_dMultiply0(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, in
  * A is pxr, B is qxp, C is qxr */
 ODE_API void cuda_dMultiply1(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, int q, int r)
 {
-	const int block_size = 8;
+	const int block_size = BLOCKSIZE;
 	//printf("cuda_dMultiply1\n");
 
 	cuda_Matrix A;
@@ -300,7 +302,7 @@ ODE_API void cuda_dMultiply1(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, in
  * A is pxr, B is pxq, C is rxq */
 ODE_API void cuda_dMultiply2(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, int q, int r)
 {
-	const int block_size = 8;
+	const int block_size = BLOCKSIZE;
 	//printf("cuda_dMultiply2\n");
 
 	cuda_Matrix A;
