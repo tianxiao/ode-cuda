@@ -240,6 +240,25 @@ void testPlaneSpace()
 #define MSIZE 21
 #define MSIZE4 24	// MSIZE rounded up to 4
 
+void fat_matrix()
+{
+	int dim = 1000;
+	dReal *A = (dReal *) malloc(sizeof(dReal)*dim*dim);
+	dReal *B = (dReal *) malloc(sizeof(dReal)*dim*dim);
+	dReal *C = (dReal *) malloc(sizeof(dReal)*dim*dim);
+	dSetValue(A, 1, dim * dim);
+	dSetValue(B, 2, dim * dim);
+	dSetZero(C, dim * dim);
+	dMultiply0(C, A, B, dim, dim, dim);
+		dSetValue(C, 1, dim * dim);
+	dMultiply1(C, A, B, dim, dim, dim);
+		dSetValue(C, 2, dim * dim);
+	dMultiply2(C, A, B, dim, dim, dim);
+		dSetValue(C, 3, dim * dim);
+	free(A);
+	free(B);
+	free(C);
+}
 
 void testMatrixMultiply()
 {
@@ -1099,7 +1118,7 @@ extern "C" void dTestSolveLCP();
 int main()
 {
   dInitODE();
-  testRandomNumberGenerator();
+/*  testRandomNumberGenerator();
   testInfinity();
   testPad();
   testCrossProduct();
@@ -1122,8 +1141,9 @@ int main()
   testQuaternionMultiply();
   testRotationFunctions();
   dTestMatrixComparison();
-  dTestSolveLCP();
+  dTestSolveLCP();*/
   // dTestDataStructures();
+  fat_matrix();
   dCloseODE();
   return 0;
 }

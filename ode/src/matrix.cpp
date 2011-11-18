@@ -102,7 +102,8 @@ void dMultiply2 (dReal *A, const dReal *B, const dReal *C, int p, int q, int r)
   dAASSERT (A && B && C && p>0 && q>0 && r>0);
   //rpad = dPAD(r) - r;
   //qskip = dPAD(q);
-  rpad = r;
+  //rpad = r;
+  rpad = 0;
   qskip = q;
   bb = B;
   for (i=p; i; i--) {

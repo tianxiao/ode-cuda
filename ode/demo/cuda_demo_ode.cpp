@@ -321,7 +321,7 @@ void testMatrixMultiply()
 
 void testMatrixMultiply3()
 {
-	int dim = 25;
+	int dim = 1000;
 	dReal A[dim * dim], B[dim * dim], C[dim * dim], host_C[dim * dim];
 	for (int i = 0; i < dim * dim; ++i) { A[i] = i; }
 	printMatrix("A", A, dim, dim);
@@ -363,9 +363,9 @@ void testMatrixMultiply4()
 	dReal *dev_A = cuda_copyToDevice(A, q * p);
 	dReal *dev_B = cuda_copyToDevice(B, q * r);
 	dReal *dev_C = cuda_copyToDevice(C, p * r);
-	dMultiply1(C, A, B, p, q, r);
+	dMultiply2(C, A, B, p, q, r);
 	printMatrix("C_ODE", C, p, r);
-	cuda_dMultiply1(dev_C, dev_A, dev_B, p, q, r);
+	cuda_dMultiply2(dev_C, dev_A, dev_B, p, q, r);
 	cuda_copyFromDevice(dev_C, host_C, p * r);
 	printMatrix("C_CUD", host_C, p, r);
 	cuda_freeFromDevice(dev_A);
@@ -401,6 +401,26 @@ void testMatrixMultiply5()
 	for (int i=0; i<9 * 25; i++) {
 		assert(C[i] == host_C[i]);
 	}
+}
+
+void fat_matrix()
+{
+	int dim = 1000;
+	dReal *A = cuda_makeOnDevice(dim);
+	dReal *B = cuda_makeOnDevice(dim);
+	dReal *C = cuda_makeOnDevice(dim);
+	cuda_dSetValue(A, 1, dim * dim);
+	cuda_dSetValue(B, 2, dim * dim);
+	cuda_dSetZero(C, dim * dim);
+	cuda_dMultiply0(C, A, B, dim, dim, dim);
+		cuda_dSetValue(C, 1, dim * dim);
+	cuda_dMultiply1(C, A, B, dim, dim, dim);
+		cuda_dSetValue(C, 2, dim * dim);
+	cuda_dMultiply2(C, A, B, dim, dim, dim);
+		cuda_dSetValue(C, 3, dim * dim);
+	cuda_freeFromDevice(A);
+	cuda_freeFromDevice(B);
+	cuda_freeFromDevice(C);
 }
 
 void testSmallMatrixMultiply()
@@ -1227,7 +1247,7 @@ extern "C" void dTestSolveLCP();
 
 int main()
 {
-  dInitODE();
+//  dInitODE();
 /*  testRandomNumberGenerator();
   testInfinity();
   testPad();
@@ -1237,9 +1257,9 @@ int main()
   //testReorthonormalize();     ... not any more
   testPlaneSpace();*/
 //  testMatrixMultiply3();
-  testMatrixMultiply4();
-  testMatrixMultiply5();
-  testMatrixMultiply();
+//  testMatrixMultiply4();
+//  testMatrixMultiply5();
+//  testMatrixMultiply();
 // testMatrixMultiply();
 /*  testSmallMatrixMultiply();
   testCholeskyFactorization();
@@ -1257,6 +1277,7 @@ int main()
   dTestMatrixComparison();
   dTestSolveLCP();*/
   // dTestDataStructures();
-  dCloseODE();
+  fat_matrix();
+//  dCloseODE();
   return 0;
 }

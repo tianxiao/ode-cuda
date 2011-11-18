@@ -6,7 +6,7 @@
 #include <ode/common.h>
 #include <ode/cuda_helper.h>
 #include <ode/cuda_matrix.h>
-#include "cuPrintf.cu"
+//#include "cuprintf.cu"
 
 __global__ void setzero(dReal *a, int n)
 {
@@ -86,27 +86,25 @@ template <int BLOCK_SIZE> __global__ void MatMulKernel0(cuda_Matrix A, cuda_Matr
 		__shared__ dReal Bs[BLOCK_SIZE][BLOCK_SIZE];
 		if (BLOCK_SIZE * blockRow + row < A.height && BLOCK_SIZE * m + col < A.width) {
 			As[row][col] = GetElement(A_sub, row, col);
-			cuPrintf("A row: %d\n", row);
-			cuPrintf("A col: %d\n", col);
+			//cu//printf("A row: %d\n", row);
+			//cu//printf("A col: %d\n", col);
 		} else {
 			As[row][col] = 0;
-			cuPrintf("\t\t\tA row: %d\n", row);
-			cuPrintf("\t\t\tA col: %d\n", col);
+			//cu//printf("\t\t\tA row: %d\n", row);
+			//cu//printf("\t\t\tA col: %d\n", col);
 		}
-		__syncthreads();
 		if (BLOCK_SIZE * m + row < B.height && BLOCK_SIZE * blockCol + col < B.width) {
 			Bs[row][col] = GetElement(B_sub, row, col);
-			cuPrintf("B row: %d\n", row);
-			cuPrintf("B col: %d\n", col);
+			//cu//printf("B row: %d\n", row);
+			//cu//printf("B col: %d\n", col);
 		} else {
 			Bs[row][col] = 0;
-			cuPrintf("\t\t\tB row: %d\n", row);
-			cuPrintf("\t\t\tB col: %d\n", col);
+			//cu//printf("\t\t\tB row: %d\n", row);
+			//cu//printf("\t\t\tB col: %d\n", col);
 		}
 		__syncthreads();
 		for (int e = 0; e < BLOCK_SIZE; ++e) {
 			C_val += As[row][e] * Bs[e][col];
-			__syncthreads();
 		}
 		__syncthreads();
 	}
@@ -137,27 +135,25 @@ template <int BLOCK_SIZE> __global__ void MatMulKernel1(cuda_Matrix A, cuda_Matr
 		if (BLOCK_SIZE * m + col < A.height && BLOCK_SIZE * blockRow + row < A.width) {
 			As[row][col] = GetTransposeElement(A_sub, row, col);
 			//As[row][col] = 0;
-			cuPrintf("A row: %d\n", row);
-			cuPrintf("A col: %d\n", col);
+			//cu//printf("A row: %d\n", row);
+			//cu//printf("A col: %d\n", col);
 		} else {
 			As[row][col] = 0;
-			cuPrintf("\t\t\tA row: %d\n", row);
-			cuPrintf("\t\t\tA col: %d\n", col);
+			//cu//printf("\t\t\tA row: %d\n", row);
+			//cu//printf("\t\t\tA col: %d\n", col);
 		}
-		__syncthreads();
 		if (BLOCK_SIZE * m + row < B.height && BLOCK_SIZE * blockCol + col < B.width) {
 			Bs[row][col] = GetElement(B_sub, row, col);
-			cuPrintf("B row: %d\n", row);
-			cuPrintf("B col: %d\n", col);
+			//cu//printf("B row: %d\n", row);
+			//cu//printf("B col: %d\n", col);
 		} else {
 			Bs[row][col] = 0;
-			cuPrintf("\t\t\tB row: %d\n", row);
-			cuPrintf("\t\t\tB col: %d\n", col);
+			//cu//printf("\t\t\tB row: %d\n", row);
+			//cu//printf("\t\t\tB col: %d\n", col);
 		}
 		__syncthreads();
 		for (int e = 0; e < BLOCK_SIZE; ++e) {
 			C_val += As[row][e] * Bs[e][col];
-			__syncthreads();
 		}
 		__syncthreads();
 	}
@@ -187,27 +183,25 @@ template <int BLOCK_SIZE> __global__ void MatMulKernel2(cuda_Matrix A, cuda_Matr
 		__shared__ dReal Bs[BLOCK_SIZE][BLOCK_SIZE];
 		if (BLOCK_SIZE * blockRow + row < A.height && BLOCK_SIZE * m + col < A.width) {
 			As[row][col] = GetElement(A_sub, row, col);
-			cuPrintf("A row: %d\n", row);
-			cuPrintf("A col: %d\n", col);
+			//cu//printf("A row: %d\n", row);
+			//cu//printf("A col: %d\n", col);
 		} else {
 			As[row][col] = 0;
-			cuPrintf("\t\t\tA row: %d\n", row);
-			cuPrintf("\t\t\tA col: %d\n", col);
+			//cu//printf("\t\t\tA row: %d\n", row);
+			//cu//printf("\t\t\tA col: %d\n", col);
 		}
-		__syncthreads();
 		if (BLOCK_SIZE * m + row < B.width && BLOCK_SIZE * blockCol + col < B.height) {
 			Bs[row][col] = GetTransposeElement(B_sub, row, col);
-			cuPrintf("B row: %d\n", row);
-			cuPrintf("B col: %d\n", col);
+			//cu//printf("B row: %d\n", row);
+			//cu//printf("B col: %d\n", col);
 		} else {
 			Bs[row][col] = 0;
-			cuPrintf("\t\t\tB row: %d\n", row);
-			cuPrintf("\t\t\tB col: %d\n", col);
+			//cu//printf("\t\t\tB row: %d\n", row);
+			//cu//printf("\t\t\tB col: %d\n", col);
 		}
 		__syncthreads();
 		for (int e = 0; e < BLOCK_SIZE; ++e) {
 			C_val += As[row][e] * Bs[e][col];
-			__syncthreads();
 		}
 		__syncthreads();
 	}
@@ -221,7 +215,7 @@ template <int BLOCK_SIZE> __global__ void MatMulKernel2(cuda_Matrix A, cuda_Matr
 ODE_API void cuda_dMultiply0(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, int q, int r)
 {
 	const int block_size = 8;
-	printf("cuda_dMultiply0\n");
+	//printf("cuda_dMultiply0\n");
 
 	cuda_Matrix A;
 	A.width = r;
@@ -241,31 +235,31 @@ ODE_API void cuda_dMultiply0(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, in
 	C.stride = r;
 	C.elements = dev_C;
 
-	printf("Launching MatMulKernel0\n");
-	printf("\tB.width: %d\n\tA.height: %d\n", B.width, A.height);
-	printf("\tBlock size: %d\n", block_size);
+	//printf("Launching MatMulKernel0\n");
+	//printf("\tB.width: %d\n\tA.height: %d\n", B.width, A.height);
+	//printf("\tBlock size: %d\n", block_size);
 
 	dim3 dimBlock(block_size, block_size);
-	printf("\tdimBlock.x: %d\n\tdimBlock.y: %d\n", dimBlock.x, dimBlock.y);
+	//printf("\tdimBlock.x: %d\n\tdimBlock.y: %d\n", dimBlock.x, dimBlock.y);
 
 	dim3 dimGrid((A.width + (block_size - 1)) / dimBlock.x, (A.height + (block_size - 1)) / dimBlock.y);
 	//dim3 dimGrid((B.width + dimBlock.x) / dimBlock.x, (A.height + dimBlock.y) / dimBlock.y);
-	printf("\tGrid.x: %d\n\tGrid.y: %d\n", dimGrid.x, dimGrid.y);
+	//printf("\tGrid.x: %d\n\tGrid.y: %d\n", dimGrid.x, dimGrid.y);
 
-	//cudaPrintfInit();
+	//cuda//printfInit();
 
 	MatMulKernel0<block_size><<<dimGrid, dimBlock>>>(B, C, A);
 
-	//cudaPrintfDisplay(stdout, true);
-	//cudaPrintfEnd();
+	//cuda//printfDisplay(stdout, true);
+	//cuda//printfEnd();
 }
 
 /* computes A = (B^T)*C
  * A is pxr, B is qxp, C is qxr */
 ODE_API void cuda_dMultiply1(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, int q, int r)
 {
-	const int block_size = 2;
-	printf("cuda_dMultiply1\n");
+	const int block_size = 8;
+	//printf("cuda_dMultiply1\n");
 
 	cuda_Matrix A;
 	A.width = r;
@@ -285,21 +279,21 @@ ODE_API void cuda_dMultiply1(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, in
 	C.stride = r;
 	C.elements = dev_C;
 
-	printf("Launching MatMulKernel1\n");
-	printf("\tB.width: %d\n\tA^T.height: %d\n", B.width, A.width);
-	printf("\tBlock size: %d\n", block_size);
+	//printf("Launching MatMulKernel1\n");
+	//printf("\tB.width: %d\n\tA^T.height: %d\n", B.width, A.width);
+	//printf("\tBlock size: %d\n", block_size);
 
 	dim3 dimBlock(block_size, block_size);
-	printf("\tdimBlock.x: %d\n\tdimBlock.y: %d\n", dimBlock.x, dimBlock.y);
+	//printf("\tdimBlock.x: %d\n\tdimBlock.y: %d\n", dimBlock.x, dimBlock.y);
 	dim3 dimGrid((A.width + (block_size - 1)) / dimBlock.x, (A.height + (block_size - 1)) / dimBlock.y);
-	printf("\tGrid.x: %d\n\tGrid.y: %d\n", dimGrid.x, dimGrid.y);
+	//printf("\tGrid.x: %d\n\tGrid.y: %d\n", dimGrid.x, dimGrid.y);
 
-	//cudaPrintfInit();
+	//cuda//printfInit();
 
 	MatMulKernel1<block_size><<<dimGrid, dimBlock>>>(B, C, A);
 
-	//cudaPrintfDisplay(stdout, true);
-	//cudaPrintfEnd();
+	//cuda//printfDisplay(stdout, true);
+	//cuda//printfEnd();
 }
 
 /* computes A = B*(C^T)
@@ -307,7 +301,7 @@ ODE_API void cuda_dMultiply1(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, in
 ODE_API void cuda_dMultiply2(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, int q, int r)
 {
 	const int block_size = 8;
-	printf("cuda_dMultiply2\n");
+	//printf("cuda_dMultiply2\n");
 
 	cuda_Matrix A;
 	A.width = r;
@@ -327,14 +321,14 @@ ODE_API void cuda_dMultiply2(dReal *dev_A, dReal *dev_B, dReal *dev_C, int p, in
 	C.stride = q;
 	C.elements = dev_C;
 
-	printf("Launching MatMulKernel2\n");
-	printf("\tB.width: %d\n\tA.height: %d\n", B.width, A.height);
-	printf("\tBlock size: %d\n", block_size);
+	//printf("Launching MatMulKernel2\n");
+	//printf("\tB.width: %d\n\tA.height: %d\n", B.width, A.height);
+	//printf("\tBlock size: %d\n", block_size);
 
 	dim3 dimBlock(block_size, block_size);
-	printf("\tdimBlock.x: %d\n\tdimBlock.y: %d\n", dimBlock.x, dimBlock.y);
-	dim3 dimGrid((A.height + (block_size - 1)) / dimBlock.x, (A.width + (block_size - 1)) / dimBlock.y);
-	printf("\tGrid.x: %d\n\tGrid.y: %d\n", dimGrid.x, dimGrid.y);
+	//printf("\tdimBlock.x: %d\n\tdimBlock.y: %d\n", dimBlock.x, dimBlock.y);
+	dim3 dimGrid((A.width + (block_size - 1)) / dimBlock.x, (A.height + (block_size - 1)) / dimBlock.y);
+	//printf("\tGrid.x: %d\n\tGrid.y: %d\n", dimGrid.x, dimGrid.y);
 
 	MatMulKernel2<block_size><<<dimGrid, dimBlock>>>(B, C, A);
 }
