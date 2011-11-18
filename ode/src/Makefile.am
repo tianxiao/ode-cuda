@@ -68,7 +68,8 @@ libode_la_SOURCES =     array.cpp array.h \
                         testing.cpp testing.h \
                         timer.cpp \
                         util.cpp util.h \
-						cuda_matrix.cu cuda_matrix.h
+						cuda_matrix.cu cuda_matrix.h \
+						cuPrintf.cu cuPrintf.cuh
 
 
 ###################################

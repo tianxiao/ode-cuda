@@ -19,7 +19,8 @@ libode_la_include_HEADERS = 	collision_trimesh.h \
 				export-dif.h \
 				ode.h  \
 				timer.h \
-				odeconfig.h
-				cuda_matrix.h
+				odeconfig.h \
+				cuda_matrix.h \
+				cuPrintf.cuh
 
 EXTRA_DIST = README
