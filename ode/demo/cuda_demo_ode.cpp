@@ -348,7 +348,7 @@ void testMatrixMultiply3()
 void testMatrixMultiply4()
 {
 	int row = 5;
-	int col = 3;
+	int col = 2;
 	dReal A[row * col], B[row * col], C[col * col], host_C[col * col];
 	for (int i = 0; i < row * col; ++i) { A[i] = i+1; }
 	printMatrix("A", A, row, col);
@@ -358,16 +358,43 @@ void testMatrixMultiply4()
 	printMatrix("C", C, col, col);
 	dReal *dev_A = cuda_copyToDevice(A, row * col);
 	dReal *dev_B = cuda_copyToDevice(B, row * col);
-	dReal *dev_C = cuda_copyToDevice(C, row * row);
-	dMultiply1(C, A, B, row, row, col);
+	dReal *dev_C = cuda_copyToDevice(C, col * col);
+	dMultiply1(C, A, B, col, row, col);
 	printMatrix("C_ODE", C, col, col);
-	cuda_dMultiply1(dev_C, dev_A, dev_B, row, row, col);
+	cuda_dMultiply1(dev_C, dev_A, dev_B, col, row, col);
 	cuda_copyFromDevice(dev_C, host_C, col * col);
 	printMatrix("C_CUD", host_C, col, col);
 	cuda_freeFromDevice(dev_A);
 	cuda_freeFromDevice(dev_B);
 	cuda_freeFromDevice(dev_C);
 	for (int i=0; i<col * col; i++) {
+		assert(C[i] == host_C[i]);
+	}
+}
+
+void testMatrixMultiply5()
+{
+	int row = 5;
+	int col = 2;
+	dReal A[9 * 17], B[17 * 25], C[9 * 25], host_C[9 * 25];
+	for (int i = 0; i < 9 * 17; ++i) { A[i] = i+1; }
+	printMatrix("A", A, 9, 17);
+	for (int i = 0; i < 17 * 25; ++i) { B[i] = i+1; }
+	printMatrix("B", B, 17, 25);
+	dSetZero(C, 9 * 25);
+	printMatrix("C", C, 9, 25);
+	dReal *dev_A = cuda_copyToDevice(A, 9 * 17);
+	dReal *dev_B = cuda_copyToDevice(B, 17 * 25);
+	dReal *dev_C = cuda_copyToDevice(C, 9 * 25);
+	dMultiply0(C, A, B, 9, 17, 25);
+	printMatrix("C_ODE", C, 9, 25);
+	cuda_dMultiply0(dev_C, dev_A, dev_B, 9, 17, 25);
+	cuda_copyFromDevice(dev_C, host_C, 9 * 25);
+	printMatrix("C_CUD", host_C, 9, 25);
+	cuda_freeFromDevice(dev_A);
+	cuda_freeFromDevice(dev_B);
+	cuda_freeFromDevice(dev_C);
+	for (int i=0; i<9 * 25; i++) {
 		assert(C[i] == host_C[i]);
 	}
 }
@@ -1205,9 +1232,9 @@ int main()
   testNormalize3();
   //testReorthonormalize();     ... not any more
   testPlaneSpace();*/
-  testMatrixMultiply3();
-  testMatrixMultiply4();
- testMatrixMultiply();
+//  testMatrixMultiply3();
+  testMatrixMultiply5();
+// testMatrixMultiply();
 /*  testSmallMatrixMultiply();
   testCholeskyFactorization();
   testCholeskySolve();
