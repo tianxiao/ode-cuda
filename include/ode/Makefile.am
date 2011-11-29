@@ -23,6 +23,7 @@ libode_la_include_HEADERS = 	collision_trimesh.h \
 				cuda_matrix.h \
 				cuPrintf.cuh \
 				cuda_helper.h \
-				cuda_demo_helper.h
+				cuda_demo_helper.h \
+				cuda_step.h
 
 EXTRA_DIST = README

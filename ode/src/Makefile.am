@@ -71,7 +71,8 @@ libode_la_SOURCES =     array.cpp array.h \
 						cuda_matrix.cu cuda_matrix.h \
 						cuPrintf.cu cuPrintf.cuh \
 						cuda_helper.cu cuda_helper.h \
-						cuda_demo_helper.cu cuda_demo_helper.h
+						cuda_demo_helper.cu cuda_demo_helper.h \
+						cuda_step.cu cuda_step.h
 
 
 ###################################
