@@ -7,11 +7,7 @@
 extern "C" {
 #endif
 
-ODE_API void cuda_dInternalStepIsland_x1 (dxWorld *world, dxBody * const *body, 
-int nb, dxJoint * const *_joint, int nj, dReal stepsize);
-
-ODE_API void dInternalStepIsland_x2 (dxWorld *world, dxBody * const *body, 
-int nb, dxJoint * const *_joint, int nj, dReal stepsize)
+ODE_API void cuda_step (dxWorld *world, dxBody * const *body, int nb, dReal stepsize);
 
 #ifdef __cplusplus
 }
