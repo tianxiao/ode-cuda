@@ -3,6 +3,7 @@
 
 #include <cuda.h>
 #include <ode/common.h>
+#include "objects.h"
 #include <ode/cuda_helper.h>
 
 ODE_API void cuda_checkError(const char *msg)
@@ -73,5 +74,44 @@ ODE_API dReal *cuda_makeOnDevice(int n)
 	cudaMalloc((void**) &dev_a, sizeof(dReal)*n);
 	cuda_checkError("malloc");
 	return dev_a;
+}
+
+ODE_API dxBody *cuda_copyBodiesToDevice(dxBody *cuda_body, dxBody **body, int NUM)
+{
+	int i;
+	for (i=0;i<NUM;i++) {
+		cudaMemcpy(cuda_body+i, body[i], sizeof(dxBody), cudaMemcpyHostToDevice);
+		printf("%f\n", body[i]->posr.pos[0]);
+	}
+	cuda_checkError("memcpy h to d");
+	return cuda_body;
+}
+
+ODE_API dxBody **cuda_copyBodiesFromDevice(dxBody **body, dxBody *cuda_body, int NUM)
+{
+	int i;
+	for (i=0;i<NUM;i++) {
+/*		free(body[i]);
+		dxBody *b = (dxBody *) malloc(sizeof(dxBody));
+		cudaMemcpy(b, cuda_body+i, sizeof(dxBody), cudaMemcpyDeviceToHost);
+		body[i] = b;*/
+		cudaMemcpy(body[i], cuda_body+i, sizeof(dxBody), cudaMemcpyDeviceToHost);
+	}
+	cuda_checkError("memcpy d to h");
+	return body;
+}
+
+ODE_API dxBody *cuda_initBodiesOnDevice(int NUM)
+{
+	printf("%i\n", sizeof(dxBody));
+	dxBody *cuda_body;
+	cudaMalloc((void**) &cuda_body, sizeof(dxBody)*NUM);
+	cuda_checkError("malloc");
+	return cuda_body;
+}
+
+ODE_API void cuda_free(dxBody *ptr)
+{
+	cudaFree(ptr);
 }
 

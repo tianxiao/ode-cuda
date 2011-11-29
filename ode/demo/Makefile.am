@@ -1,5 +1,5 @@
-AM_CPPFLAGS = -I$(abs_top_srcdir)/include \
-        -DDRAWSTUFF_TEXTURE_PATH="\"$(abs_top_srcdir)/drawstuff/textures\""
+AM_CPPFLAGS = -I$(abs_top_srcdir)/include -I/usr/local/cuda/include/ \
+        -DDRAWSTUFF_TEXTURE_PATH="\"$(abs_top_srcdir)/drawstuff/textures\"" -lcudart -lcuda
 
 if X11
 AM_LDFLAGS = $(X_PRE_LIBS) $(X_LIBS) $(X_EXTRA_LIBS)
@@ -43,7 +43,7 @@ noinst_PROGRAMS = \
                 demo_space \
                 demo_space_stress \
                 demo_step \
-                demo_step stripped
+                demo_step_stripped
 
 demo_boxstack_SOURCES = demo_boxstack.cpp
 demo_buggy_SOURCES = demo_buggy.cpp

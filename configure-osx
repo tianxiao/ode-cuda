@@ -4,5 +4,5 @@
 export CPPFLAGS=-I/usr/X11/include 
 export LDFLAGS="-L/usr/X11/lib -lGL -lGLU -lglut -lX11 -L/usr/local/cuda/lib -lcudart -lcuda" 
 export NVCC=/usr/local/bin/nvcc
-./configure --with-drawstuff=X11 --enable-demos "$@"
+./configure --with-drawstuff=X11 --enable-demos --disable-asserts "$@"
 
