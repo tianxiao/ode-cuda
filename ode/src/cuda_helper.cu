@@ -87,6 +87,18 @@ ODE_API dxBody *cuda_copyBodiesToDevice(dxBody *cuda_body, dxBody **body, int NU
 	return cuda_body;
 }
 
+ODE_API dxBody *cuda_copyBodiesToDevice2(dxBody *cuda_body, dxWorld *world, int NUM)
+{
+	int i;
+	dxBody *b;
+	for (b=world->firstbody;b;b=(dxBody*)b->next) {
+		cudaMemcpy(cuda_body+i, b, sizeof(dxBody), cudaMemcpyHostToDevice);
+//		printf("%f\n", b->posr.pos[0]);
+	}
+	cuda_checkError("memcpy h to d");
+	return cuda_body;
+}
+
 ODE_API dxBody **cuda_copyBodiesFromDevice(dxBody **body, dxBody *cuda_body, int NUM)
 {
 	int i;

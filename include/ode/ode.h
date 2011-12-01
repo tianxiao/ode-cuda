@@ -37,6 +37,7 @@
 #include <ode/cuda_helper.h>
 #include <ode/cuda_demo_helper.h>
 #include <ode/cuda_matrix.h>
+#include <ode/cuda_step.h>
 #include <ode/timer.h>
 #include <ode/rotation.h>
 #include <ode/mass.h>

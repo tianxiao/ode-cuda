@@ -219,7 +219,8 @@ static void cuda_simLoop (int pause)
 		     scale2*(dRandReal()*2-1));
     }*/
     //cuda_dWorldStep (world,0.005);
-    dWorldStep (world,0.005);
+//    dWorldStep (world,0.005);
+//	cuda_dxProcessIslands (world, 0.005, NULL);
   }
 
   // float sides[3] = {SIDE,SIDE,SIDE};
