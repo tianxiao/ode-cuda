@@ -191,7 +191,7 @@ __device__ dReal cuda_sinc(dReal x)
 // `body' is the body array, `nb' is the size of the array.
 // `_joint' is the body array, `nj' is the size of the array.
 
-__global__ void cuda_step(dxWorld *world, dxBody *body, int nb, dxJoint *_joint, int nj, dReal stepsize)
+ __global__ void cuda_step(dxBody *body, int nb, dxJoint *_joint, int nj, dReal stepsize, dVector3 gravity)
 {
 	int i,j,k;
 
@@ -223,9 +223,9 @@ __global__ void cuda_step(dxWorld *world, dxBody *body, int nb, dxJoint *_joint,
 	// add the gravity force to all bodies
 
     if ((body[bid].flags & dxBodyNoGravity)==0) {
-		body[bid].facc[0] += body[bid].mass.mass * world->gravity[0];
-		body[bid].facc[1] += body[bid].mass.mass * world->gravity[1];
-		body[bid].facc[2] += body[bid].mass.mass * world->gravity[2];
+		body[bid].facc[0] += body[bid].mass.mass * gravity[0];
+		body[bid].facc[1] += body[bid].mass.mass * gravity[1];
+		body[bid].facc[2] += body[bid].mass.mass * gravity[2];
     }
 
 
@@ -394,18 +394,15 @@ __global__ void cuda_step(dxWorld *world, dxBody *body, int nb, dxJoint *_joint,
 
 ODE_API void cuda_dInternalStepIsland_x1 (dxWorld *world, dxBody *cuda_body, int nb, dxJoint * *_joint, int nj, dReal stepsize)
 {
-	cuda_step<<<BLOCKSIZE, 1>>>(world, cuda_body, world->nb, NULL, 0, stepsize);
+	cuda_step<<<BLOCKSIZE, 1>>>(cuda_body, world->nb, NULL, 0, stepsize, world->gravity);
 }
 
-ODE_API void cuda_dxProcessIslands(dxWorld *world, dReal stepsize, dstepper_fn_t stepper)
+ ODE_API void cuda_dxProcessIslands(dxWorld *world, dxBody *cuda_body, dReal stepsize, dstepper_fn_t stepper)
 {
 	const int block_size = BLOCKSIZE;
 	dim3 dimBlock(block_size, block_size);
 	dim3 dimGrid(block_size, block_size);
-	dxBody *cuda_body;
-	cuda_body = (dxBody *) cuda_initBodiesOnDevice(world->nb);
-	cuda_copyBodiesToDevice2(cuda_body, world, world->nb);
+
 	cuda_dInternalStepIsland_x1(world, cuda_body, world->nb, NULL, 0, stepsize);
-	//process_islands<block_size><<<dimGrid, dimBlock>>>();
 }
 

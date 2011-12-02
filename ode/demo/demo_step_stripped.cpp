@@ -208,19 +208,21 @@ static void cuda_simLoop (int pause)
     int i;
     const dReal scale1 = 0.005;
     const dReal scale2 = 0.005;
- /*   for (i=0; i<NUM; i++) {
-      dBodyAddForce (body[i],
-		     scale1*(dRandReal()*2-1),
-		     scale1*(dRandReal()*2-1),
-		     scale1*(dRandReal()*2-1));
-      dBodyAddTorque (body[i],
-		     scale2*(dRandReal()*2-1),
-		     scale2*(dRandReal()*2-1),
-		     scale2*(dRandReal()*2-1));
-    }*/
+	for (i=0; i<NUM; i++) {
+		dBodyAddForce (body[i],
+		               scale1*(dRandReal()*2-1),
+		               scale1*(dRandReal()*2-1),
+		               scale1*(dRandReal()*2-1));
+		dBodyAddTorque (body[i],
+		                scale2*(dRandReal()*2-1),
+		                scale2*(dRandReal()*2-1),
+		                scale2*(dRandReal()*2-1));
+    }
     //cuda_dWorldStep (world,0.005);
-//    dWorldStep (world,0.005);
-//	cuda_dxProcessIslands (world, 0.005, NULL);
+	//    dWorldStep (world,0.005);
+
+	cuda_copyBodiesToDevice2(cuda_body, world, NUM);
+	cuda_dxProcessIslands(world, cuda_body, 0.005, NULL);
   }
 
   // float sides[3] = {SIDE,SIDE,SIDE};
@@ -254,14 +256,13 @@ int main (int argc, char **argv)
 
   dInitODE2(0);
   dRandSetSeed (time(0));
-  createTest();
 
   // run simulation
   dsSimulationLoop (argc,argv,352,288,&fn);
 
   cuda_free(cuda_body);
 
-  dWorldDestroy (world);
+  dWorldDestroy(world);
   dCloseODE();
   return 0;
 }
