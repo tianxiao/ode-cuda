@@ -1,0 +1,28 @@
+Tests to write:
+1. Arbitrary matrix multiplication (we supply p, q, r, and multiply a pxq and a
+   qxr matrix).
+
+2. ODE test of chain simulation using both serial and parallel matrix
+   multiplication.  Take the length of the chain as a parameter.
+
+3. ODE test of n unlinked bodies using serial and parallel stepping.  Take
+   the number of bodies as a parameter.
+
+Data to get:
+1. For a chain with n bodies, the largest matrix multiplication that occurs each
+   step is J*invM*J^T, where J is (n-1)*(6n), invM is (6n)*(6n), and J^T is
+   (6n)*(n-1).  We want to use test (1) to find out where a matrix 
+   multiplication of this form is faster in parallel than in serial.
+
+2. Profile the serial simulation of the chain to find out how much time is spent
+   in the step function.
+
+3. Run test (2) for a set number of steps for a few different chain lengths.
+   See if there is any length at which the parallel version is faster.
+
+4. Run test (3) for a set number of steps for a few different numbers of bodies.
+   See if there is any number at which the parallel version is faster.
+
+Lower-priority:
+1. make a video of one of our benchmarks
+   
