@@ -204,7 +204,6 @@ __device__ dReal cuda_sinc(dReal x)
 
 	int bid = threadIdx.x + blockDim.x * blockIdx.x;
 	if (bid >= nb) { return; }
-	cuPrintf("%f\t%f\t%f\n", body[bid].posr.pos[0], body[bid].posr.pos[0], body[bid].posr.pos[0]);
 
 	// for all bodies, compute the inertia tensor and its inverse in the global
 	// frame, and compute the rotational force and add it to the torque
@@ -274,8 +273,14 @@ __device__ dReal cuda_sinc(dReal x)
 
 	// apply the velocity update to the bodies
 
+	cuPrintf("XYZ1: %f\t%f\t%f\t\n", body[bid].posr.pos[0], body[bid].posr.pos[1], body[bid].posr.pos[2]);
+	cuPrintf("VEL1: %f\t%f\t%f\t\n", body[bid].lvel[0], body[bid].lvel[1], body[bid].lvel[2]);
+
     for (j = 0; j < 3; j++) body[bid].lvel[j] = vnew[j];
     for (j = 0; j < 3; j++) body[bid].avel[j] = vnew[3+j];
+
+	cuPrintf("XYZ2: %f\t%f\t%f\t\n", body[bid].posr.pos[0], body[bid].posr.pos[1], body[bid].posr.pos[2]);
+	cuPrintf("VEL2: %f\t%f\t%f\t\n", body[bid].lvel[0], body[bid].lvel[1], body[bid].lvel[2]);
 
 	// update the position and orientation from the new linear/angular velocity
 	// (over the given timestep)
@@ -396,6 +401,7 @@ __device__ dReal cuda_sinc(dReal x)
     body[bid].tacc[1] = 0;
     body[bid].tacc[2] = 0;
     body[bid].tacc[3] = 0;
+
 }
 
 ODE_API void cuda_dInternalStepIsland_x1 (dxWorld *world, dxBody *cuda_body, int nb, dxJoint * *_joint, int nj, dReal stepsize)

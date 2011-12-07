@@ -104,11 +104,10 @@ ODE_API dxBody *cuda_copyBodiesToDevice2(dxBody *cuda_body, dxWorld *world, int 
 
 ODE_API dxBody **cuda_copyBodiesFromDevice(dxWorld *world, dxBody *cuda_body, int NUM, dxBody *b_buff)
 {
-//	printf("Copy Bodies From Device");
+	printf("Copy Bodies From Device\n");
 	int i=0;
 	cudaMemcpy(b_buff, cuda_body, sizeof(dxBody)*NUM, cudaMemcpyDeviceToHost);
 	cuda_checkError("memcpy bodies from device d to h");
-	printf("GOt HERE\n");
 /*	for (i=0;i<NUM;i++) {
 		//dxBody *b = (dxBody *) malloc(sizeof(dxBody));
 		//cudaMemcpy(b, cuda_body+i, sizeof(dxBody), cudaMemcpyDeviceToHost);
@@ -126,6 +125,10 @@ ODE_API dxBody **cuda_copyBodiesFromDevice(dxWorld *world, dxBody *cuda_body, in
 		}
 		b->invMass = b_buff[i].invMass;
 		b->posr = b_buff[i].posr;
+		b->posr.pos[0] = b_buff[i].posr.pos[0];
+		b->posr.pos[1] = b_buff[i].posr.pos[1];
+		b->posr.pos[2] = b_buff[i].posr.pos[2];
+		printf("%f\t%f\t%f\t\n", b->posr.pos[0], b->posr.pos[1], b->posr.pos[2]);
 		b->q[0] = b_buff[i].q[0];
 		b->q[1] = b_buff[i].q[1];
 		b->q[2] = b_buff[i].q[2];
