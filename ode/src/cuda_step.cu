@@ -17,7 +17,7 @@
 #include <ode/cuda_helper.h>
 #include <ode/cuda_matrix.h>
 
-#define BLOCKSIZE 4
+#define BLOCKSIZE 16
 
 __device__ void dQMultiply0 (dQuaternion qa, const dQuaternion qb, const dQuaternion qc) {
   qa[0] = qb[0]*qc[0] - qb[1]*qc[1] - qb[2]*qc[2] - qb[3]*qc[3];
@@ -191,13 +191,14 @@ __device__ dReal cuda_sinc(dReal x)
 // `body' is the body array, `nb' is the size of the array.
 // `_joint' is the body array, `nj' is the size of the array.
 
- __global__ void cuda_step(dxBody *body, int nb, dxJoint *_joint, int nj, dReal stepsize, dVector3 gravity)
+ __global__ void cuda_step(dxBody *body, int nb, dReal stepsize, dVector3 gravity)
 {
 	int i,j,k;
 
 	dReal I[3*3], invI[3*3];
 
-	int bid = blockIdx.x;
+	int bid = threadIdx.x + blockDim.x * blockIdx.x;
+	if (bid > nb) { return; }
 
 	// for all bodies, compute the inertia tensor and its inverse in the global
 	// frame, and compute the rotational force and add it to the torque
@@ -269,7 +270,6 @@ __device__ dReal cuda_sinc(dReal x)
 
     for (j = 0; j < 3; j++) body[bid].lvel[j] = vnew[j];
     for (j = 0; j < 3; j++) body[bid].avel[j] = vnew[3+j];
-
 
 	// update the position and orientation from the new linear/angular velocity
 	// (over the given timestep)
@@ -394,7 +394,8 @@ __device__ dReal cuda_sinc(dReal x)
 
 ODE_API void cuda_dInternalStepIsland_x1 (dxWorld *world, dxBody *cuda_body, int nb, dxJoint * *_joint, int nj, dReal stepsize)
 {
-	cuda_step<<<BLOCKSIZE, 1>>>(cuda_body, world->nb, NULL, 0, stepsize, world->gravity);
+	//cuda_step<<<BLOCKSIZE, 1>>>(cuda_body, world->nb, NULL, 0, stepsize, world->gravity);
+	cuda_step<<<BLOCKSIZE/nb, 256>>>(cuda_body, world->nb, stepsize, world->gravity);
 }
 
  ODE_API void cuda_dxProcessIslands(dxWorld *world, dxBody *cuda_body, dReal stepsize, dstepper_fn_t stepper)

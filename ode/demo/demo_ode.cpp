@@ -1116,6 +1116,7 @@ extern "C" void dTestSolveLCP();
 
 int main(int argc, char *argv[])
 {
+	dBodySetMass(NULL,NULL);
 //  dInitODE();
 /*  testRandomNumberGenerator();
   testInfinity();

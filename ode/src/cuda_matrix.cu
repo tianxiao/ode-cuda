@@ -8,7 +8,7 @@
 #include <ode/cuda_matrix.h>
 //#include "cuprintf.cu"
 
-#define BLOCKSIZE 32
+#define BLOCKSIZE 16
 
 __global__ void setzero(dReal *a, int n)
 {

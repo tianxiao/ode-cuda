@@ -28,6 +28,7 @@
 
 #include <time.h>
 #include <ode/ode.h>
+#include <ode/common.h>
 #include <ode/objects.h>
 #include <drawstuff/drawstuff.h>
 #include "texturepath.h"
@@ -51,7 +52,7 @@
 
 // some constants
 
-#define NUM 1000			// number of bodies
+#define NUM 5			// number of bodies
 #define NUMJ 9			// number of joints
 #define SIDE (2)		// side length of a box
 #define MASS (1.0)		// mass of a box
@@ -68,6 +69,7 @@ static dBodyID body[NUM];
 static dJointID joint[NUMJ];
 
 static dBodyID cuda_body;
+static dBodyID b_buff;
 
 // create the test system
 
@@ -161,6 +163,7 @@ static void start()
 
 static void cuda_start()
 {
+	b_buff = (dBodyID) malloc(sizeof(body[0])*NUM);
   dAllocateODEDataForThread(dAllocateMaskAll);
   if (gfx) {
     static float xyz[3] = {2.6117f,-1.4433f,2.3700f};
@@ -209,7 +212,7 @@ static void cuda_simLoop (int pause)
     const dReal scale1 = 0.005;
     const dReal scale2 = 0.005;
 	for (i=0; i<NUM; i++) {
-		dBodyAddForce (body[i],
+/*		dBodyAddForce (body[i],
 		               scale1*(dRandReal()*2-1),
 		               scale1*(dRandReal()*2-1),
 		               scale1*(dRandReal()*2-1));
@@ -217,16 +220,19 @@ static void cuda_simLoop (int pause)
 		                scale2*(dRandReal()*2-1),
 		                scale2*(dRandReal()*2-1),
 		                scale2*(dRandReal()*2-1));
+						*/
     }
     //cuda_dWorldStep (world,0.005);
-	//    dWorldStep (world,0.005);
+	//dWorldStep (world,0.005);
 
-	cuda_copyBodiesToDevice2(cuda_body, world, NUM);
+	//cuda_copyBodiesToDevice2(cuda_body, world, NUM);
 	cuda_dxProcessIslands(world, cuda_body, 0.005, NULL);
+	if (gfx) {
+		cuda_copyBodiesFromDevice(world, cuda_body, NUM, b_buff);
+	}
   }
 
   // float sides[3] = {SIDE,SIDE,SIDE};
-  cuda_copyBodiesFromDevice(body, cuda_body, NUM);
   if (gfx) {
     dsSetColor (1,1,0);
     for (int i=0; i<NUM; i++)

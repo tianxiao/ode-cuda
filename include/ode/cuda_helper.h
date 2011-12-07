@@ -16,7 +16,7 @@ ODE_API dReal *cuda_makeOnDevice(int n);
 
 ODE_API dxBody *cuda_copyBodiesToDevice(dxBody *cuda_body, dxBody **body, int NUM);
 ODE_API dxBody *cuda_copyBodiesToDevice2(dxBody *cuda_body, dxWorld *world, int NUM);
-ODE_API dxBody **cuda_copyBodiesFromDevice(dxBody **body, dxBody *cuda_body, int NUM);
+ODE_API dxBody **cuda_copyBodiesFromDevice(dxWorld *world, dxBody *cuda_body, int NUM, dxBody *b_buff);
 ODE_API dxBody *cuda_initBodiesOnDevice(int NUM);
 ODE_API void cuda_free(dxBody *ptr);
 
