@@ -291,53 +291,54 @@ __device__ dReal cuda_sinc(dReal x)
 
 	// apply the velocity update to the bodies
 
-	cuPrintf("XYZ1: %f\t%f\t%f\t\n", body[bid].posr.pos[0], body[bid].posr.pos[1], body[bid].posr.pos[2]);
-	cuPrintf("VEL1: %f\t%f\t%f\t\n", body[bid].lvel[0], body[bid].lvel[1], body[bid].lvel[2]);
-
     for (j = 0; j < 3; j++) body[bid].lvel[j] = vnew[j];
     for (j = 0; j < 3; j++) body[bid].avel[j] = vnew[3+j];
-
-	cuPrintf("XYZ2: %f\t%f\t%f\t\n", body[bid].posr.pos[0], body[bid].posr.pos[1], body[bid].posr.pos[2]);
-	cuPrintf("VEL2: %f\t%f\t%f\t\n", body[bid].lvel[0], body[bid].lvel[1], body[bid].lvel[2]);
 
 	// update the position and orientation from the new linear/angular velocity
 	// (over the given timestep)
 	//dxBody *b = &(body[bid]);
-	dxBody b = (body[bid]);
+
 	// cap the angular velocity
-	if (b.flags & dxBodyMaxAngularSpeed) {
-        const dReal max_ang_speed = b.max_angular_speed;
-        const dReal aspeed = dDOT( b.avel, b.avel );
+	if (body[bid].flags & dxBodyMaxAngularSpeed) {
+        const dReal max_ang_speed = body[bid].max_angular_speed;
+        const dReal aspeed = dDOT( body[bid].avel, body[bid].avel );
         if (aspeed > max_ang_speed*max_ang_speed) {
 			const dReal coef = max_ang_speed/sqrtf(aspeed);
 			//dOPEC(b.avel, *=, coef); // multiply vector by scalar coef
-			b.avel[0] *= coef;
-			b.avel[1] *= coef;
-			b.avel[2] *= coef;
+			body[bid].avel[0] *= coef;
+			body[bid].avel[1] *= coef;
+			body[bid].avel[2] *= coef;
         }
 	}
 	// end of angular velocity cap
 
 	dReal h = stepsize;
 
-	// handle linear velocity
-	for (j=0; j<3; j++) b.posr.pos[j] += h * b.lvel[j];
+	cuPrintf("h == stepsize: %f == %f\n", h, stepsize);
+	cuPrintf("body[bid]: XYZ1: %f\t%f\t%f\t\n", body[bid].posr.pos[0], body[bid].posr.pos[1], body[bid].posr.pos[2]);
+	cuPrintf("body[bid]: VEL1: %f\t%f\t%f\t\n", body[bid].lvel[0], body[bid].lvel[1], body[bid].lvel[2]);
 
-	if (b.flags & dxBodyFlagFiniteRotation) {
+	// handle linear velocity
+	for (j=0; j<3; j++) body[bid].posr.pos[j] += h * body[bid].lvel[j];
+
+	cuPrintf("body[bid]: XYZ2: %f\t%f\t%f\t\n", body[bid].posr.pos[0], body[bid].posr.pos[1], body[bid].posr.pos[2]);
+	cuPrintf("body[bid]: VEL2: %f\t%f\t%f\t\n\n", body[bid].lvel[0], body[bid].lvel[1], body[bid].lvel[2]);
+
+	if (body[bid].flags & dxBodyFlagFiniteRotation) {
 		dVector3 irv;	// infitesimal rotation vector
 		dQuaternion q;	// quaternion for finite rotation
 
-		if (b.flags & dxBodyFlagFiniteRotationAxis) {
+		if (body[bid].flags & dxBodyFlagFiniteRotationAxis) {
 			// split the angular velocity vector into a component along the finite
 			// rotation axis, and a component orthogonal to it.
 			dVector3 frv;		// finite rotation vector
-			dReal k = dDOT (b.finite_rot_axis,b.avel);
-			frv[0] = b.finite_rot_axis[0] * k;
-			frv[1] = b.finite_rot_axis[1] * k;
-			frv[2] = b.finite_rot_axis[2] * k;
-			irv[0] = b.avel[0] - frv[0];
-			irv[1] = b.avel[1] - frv[1];
-			irv[2] = b.avel[2] - frv[2];
+			dReal k = dDOT (body[bid].finite_rot_axis,body[bid].avel);
+			frv[0] = body[bid].finite_rot_axis[0] * k;
+			frv[1] = body[bid].finite_rot_axis[1] * k;
+			frv[2] = body[bid].finite_rot_axis[2] * k;
+			irv[0] = body[bid].avel[0] - frv[0];
+			irv[1] = body[bid].avel[1] - frv[1];
+			irv[2] = body[bid].avel[2] - frv[2];
 
 			// make a rotation quaternion q that corresponds to frv * h.
 			// compare this with the full-finite-rotation case below.
@@ -351,64 +352,63 @@ __device__ dReal cuda_sinc(dReal x)
 		}
 		else {
 			// make a rotation quaternion q that corresponds to w * h
-			dReal wlen = sqrtf (b.avel[0]*b.avel[0] + b.avel[1]*b.avel[1] +
-								b.avel[2]*b.avel[2]);
+			dReal wlen = sqrtf (body[bid].avel[0]*body[bid].avel[0] + body[bid].avel[1]*body[bid].avel[1] +
+								body[bid].avel[2]*body[bid].avel[2]);
 			h *= REAL(0.5);
 			dReal theta = wlen * h;
 			q[0] = cosf(theta);
 			dReal s = cuda_sinc(theta) * h;
-			q[1] = b.avel[0] * s;
-			q[2] = b.avel[1] * s;
-			q[3] = b.avel[2] * s;
+			q[1] = body[bid].avel[0] * s;
+			q[2] = body[bid].avel[1] * s;
+			q[3] = body[bid].avel[2] * s;
 		}
 
 		// do the finite rotation
 		dQuaternion q2;
-		dQMultiply0 (q2,q,b.q);
-		for (j=0; j<4; j++) b.q[j] = q2[j];
+		dQMultiply0 (q2,q,body[bid].q);
+		for (j=0; j<4; j++) body[bid].q[j] = q2[j];
 
 		// do the infitesimal rotation if required
-		if (b.flags & dxBodyFlagFiniteRotationAxis) {
+		if (body[bid].flags & dxBodyFlagFiniteRotationAxis) {
 			dReal dq[4];
-			dWtoDQ (irv,b.q,dq);
-			for (j=0; j<4; j++) b.q[j] += h * dq[j];
+			dWtoDQ (irv,body[bid].q,dq);
+			for (j=0; j<4; j++) body[bid].q[j] += h * dq[j];
 		}
 	}
 	else {
 		// the normal way - do an infitesimal rotation
 		dReal dq[4];
-		dWtoDQ (b.avel,b.q,dq);
-		for (j=0; j<4; j++) b.q[j] += h * dq[j];
+		dWtoDQ (body[bid].avel,body[bid].q,dq);
+		for (j=0; j<4; j++) body[bid].q[j] += h * dq[j];
 	}
 
 	// normalize the quaternion and convert it to a rotation matrix
-	dNormalize4 (b.q);
-	dQtoR (b.q,b.posr.R);
+	dNormalize4 (body[bid].q);
+	dQtoR (body[bid].q,body[bid].posr.R);
 
 	// damping
-	if (b.flags & dxBodyLinearDamping) {
-		const dReal lin_threshold = b.dampingp.linear_threshold;
-        const dReal lin_speed = dDOT( b.lvel, b.lvel );
+	if (body[bid].flags & dxBodyLinearDamping) {
+		const dReal lin_threshold = body[bid].dampingp.linear_threshold;
+        const dReal lin_speed = dDOT( body[bid].lvel, body[bid].lvel );
         if ( lin_speed > lin_threshold) {
-			const dReal k = 1 - b.dampingp.linear_scale;
+			const dReal k = 1 - body[bid].dampingp.linear_scale;
 			//dOPEC(b.lvel, *=, k);
-			b.lvel[0] *= k;
-			b.lvel[1] *= k;
-			b.lvel[2] *= k;
+			body[bid].lvel[0] *= k;
+			body[bid].lvel[1] *= k;
+			body[bid].lvel[2] *= k;
         }
 	}
-	if (b.flags & dxBodyAngularDamping) {
-		const dReal ang_threshold = b.dampingp.angular_threshold;
-        const dReal ang_speed = dDOT( b.avel, b.avel );
+	if (body[bid].flags & dxBodyAngularDamping) {
+		const dReal ang_threshold = body[bid].dampingp.angular_threshold;
+        const dReal ang_speed = dDOT( body[bid].avel, body[bid].avel );
         if ( ang_speed > ang_threshold) {
-			const dReal k = 1 - b.dampingp.angular_scale;
+			const dReal k = 1 - body[bid].dampingp.angular_scale;
 			//dOPEC(b.avel, *=, k);
-			b.avel[0] *= k;
-			b.avel[1] *= k;
-			b.avel[2] *= k;
+			body[bid].avel[0] *= k;
+			body[bid].avel[1] *= k;
+			body[bid].avel[2] *= k;
         }
 	}
-
 
 	// zero all force accumulators
     body[bid].facc[0] = 0;

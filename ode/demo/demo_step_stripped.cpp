@@ -234,6 +234,7 @@ static void cuda_simLoop (int pause)
 	//dWorldStep (world,0.005);
 
 	//cuda_copyBodiesToDevice2(cuda_body, world, num);
+	//cuda_dxProcessIslands(world, cuda_body, 0.005, NULL);
 	cuda_dxProcessIslands(world, cuda_body, 0.005, NULL);
 	if (gfx) {
 		//cuda_copyBodiesFromDevice(world, cuda_body, num, b_buff);
