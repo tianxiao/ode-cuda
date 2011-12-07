@@ -66,8 +66,8 @@ struct dObject : public dBase {
   int tag;			// used by dynamics algorithms
   void *userdata;		// user settable data
   dObject(dxWorld *w);
-virtual ~dObject() { }
-//	char padding;
+  virtual ~dObject() { }
+//  char padding;
 };
 
 // auto disable parameters

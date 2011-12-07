@@ -102,7 +102,65 @@ ODE_API dxBody *cuda_copyBodiesToDevice2(dxBody *cuda_body, dxWorld *world, int 
 	return cuda_body;
 }
 
-ODE_API dxBody **cuda_copyBodiesFromDevice(dxWorld *world, dxBody *cuda_body, int NUM, dxBody *b_buff)
+ODE_API dxBody **cuda_copyBodiesFromDevice(dxBody **body, dxBody *cuda_body, int NUM, dxBody *b_buff)
+{
+	printf("Copy Bodies From Device\n");
+	int i;
+	cudaMemcpy(b_buff, cuda_body, sizeof(dxBody)*NUM, cudaMemcpyDeviceToHost);
+	cuda_checkError("memcpy bodies from device d to h");
+/*	for (i=0;i<NUM;i++) {
+		//dxBody *b = (dxBody *) malloc(sizeof(dxBody));
+		//cudaMemcpy(b, cuda_body+i, sizeof(dxBody), cudaMemcpyDeviceToHost);
+		//body[i] = b;
+		cudaMemcpy(b[i], cuda_body, sizeof(dxBody), cudaMemcpyDeviceToHost);
+	}*/
+	dxBody *b;
+	int x;
+	for (i=0;i<NUM;i++) {
+		b=body[i];
+		b->flags = b_buff[i].flags;
+		b->geom = b_buff[i].geom;
+		b->mass = b_buff[i].mass;
+		for (x=0;x<3*3;x++) {
+			b->invI[x] = b_buff[i].invI[x];
+		}
+		b->invMass = b_buff[i].invMass;
+		b->posr = b_buff[i].posr;
+		b->posr.pos[0] = b_buff[i].posr.pos[0];
+		b->posr.pos[1] = b_buff[i].posr.pos[1];
+		b->posr.pos[2] = b_buff[i].posr.pos[2];
+		printf("%f\t%f\t%f\t\n", b_buff[i].posr.pos[0], b_buff[i].posr.pos[1], b_buff[i].posr.pos[2]);
+		b->q[0] = b_buff[i].q[0];
+		b->q[1] = b_buff[i].q[1];
+		b->q[2] = b_buff[i].q[2];
+		b->q[3] = b_buff[i].q[3];
+		b->lvel[0] = b_buff[i].lvel[0];
+		b->lvel[1] = b_buff[i].lvel[1];
+		b->lvel[2] = b_buff[i].lvel[2];
+		b->avel[0] = b_buff[i].avel[0];
+		b->avel[1] = b_buff[i].avel[1];
+		b->avel[2] = b_buff[i].avel[2];
+		b->facc[0] = b_buff[i].facc[0];
+		b->facc[1] = b_buff[i].facc[1];
+		b->facc[2] = b_buff[i].facc[2];
+		b->tacc[0] = b_buff[i].tacc[0];
+		b->tacc[1] = b_buff[i].tacc[1];
+		b->tacc[2] = b_buff[i].tacc[2];
+		b->finite_rot_axis[0] = b_buff[i].finite_rot_axis[0];
+		b->finite_rot_axis[1] = b_buff[i].finite_rot_axis[1];
+		b->finite_rot_axis[2] = b_buff[i].finite_rot_axis[2];
+		b->adis = b_buff[i].adis;
+		b->adis_timeleft = b_buff[i].adis_timeleft;
+		b->adis_stepsleft = b_buff[i].adis_stepsleft;
+		b->average_counter = b_buff[i].average_counter;
+		b->average_ready = b_buff[i].average_ready;
+		b->dampingp = b_buff[i].dampingp;
+		b->max_angular_speed = b_buff[i].max_angular_speed;
+	}
+	return NULL;
+}
+
+ODE_API dxBody **cuda_copyBodiesFromDevice2(dxWorld *world, dxBody *cuda_body, int NUM, dxBody *b_buff)
 {
 	printf("Copy Bodies From Device\n");
 	int i=0;

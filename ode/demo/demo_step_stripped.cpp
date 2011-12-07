@@ -236,7 +236,8 @@ static void cuda_simLoop (int pause)
 	//cuda_copyBodiesToDevice2(cuda_body, world, num);
 	cuda_dxProcessIslands(world, cuda_body, 0.005, NULL);
 	if (gfx) {
-		cuda_copyBodiesFromDevice(world, cuda_body, num, b_buff);
+		//cuda_copyBodiesFromDevice(world, cuda_body, num, b_buff);
+		cuda_copyBodiesFromDevice(body, cuda_body, num, b_buff);
 	}
   }
 
@@ -251,7 +252,7 @@ static void cuda_simLoop (int pause)
 
 int main (int argc, char **argv)
 {
-	printf("ODE: sizeof(dxBody): %d\n", sizeof(dxBody));
+	printf("ODE: sizeof(dxBody): %d\n", (int) sizeof(dxBody));
 
 	if (argc < 3 || ((num = atoi(argv[2])) <= 0)) {
 		fprintf(stderr, "Usage: %s {c|o} num\n", argv[0]);
