@@ -132,7 +132,7 @@ void cuda_createTest()
     dBodySetLinearVel (body[i], scale*(dRandReal()*2-1),scale*(dRandReal()*2-1),
 		       scale*(dRandReal()*2-1));
     dBodySetAngularVel (body[i], scale*(dRandReal()*2-1),scale*(dRandReal()*2-1),
-			scale*(dRandReal()*2-1));
+*			scale*(dRandReal()*2-1));
 
     // set random mass (random diagonal mass rotated by a random amount)
     dMass m;
@@ -163,7 +163,7 @@ static void start()
 
 static void cuda_start()
 {
-	b_buff = (dBodyID) malloc(sizeof(body[0])*NUM);
+	b_buff = (dBodyID) malloc(sizeof(dxBody)*NUM);
   dAllocateODEDataForThread(dAllocateMaskAll);
   if (gfx) {
     static float xyz[3] = {2.6117f,-1.4433f,2.3700f};
