@@ -30,6 +30,7 @@
 #include <ode/ode.h>
 #include <ode/common.h>
 #include <ode/objects.h>
+#include "../src/objects.h"
 #include <drawstuff/drawstuff.h>
 #include "texturepath.h"
 
@@ -52,24 +53,29 @@
 
 // some constants
 
-#define NUM 5			// number of bodies
+#define NUM 17			// number of bodies
 #define NUMJ 9			// number of joints
-#define SIDE (2)		// side length of a box
+#define SIDE (0.0866)		// side length of a box
 #define MASS (1.0)		// mass of a box
 #define RADIUS (0.0866)	// sphere radius
 
+static int num = 10;
+
 static bool gfx = true;
 //static bool use_cuda = false;
-static bool use_cuda = false;
+static bool use_cuda = true;
 
 // dynamics and collision objects
 
 static dWorldID world=0;
-static dBodyID body[NUM];
+//static dBodyID body[num];
+static dBodyID *body;
 static dJointID joint[NUMJ];
 
 static dBodyID cuda_body;
 static dBodyID b_buff;
+
+static int stepcount = 0;
 
 // create the test system
 
@@ -84,7 +90,7 @@ void createTest()
   const dReal fmass = 0.1;
 
   // create random bodies
-  for (i=0; i<NUM; i++) {
+  for (i=0; i<num; i++) {
     // create bodies at random position and orientation
     body[i] = dBodyCreate (world);
     dBodySetPosition (body[i],(dRandReal()*2-1),(dRandReal()*2-1),
@@ -119,7 +125,7 @@ void cuda_createTest()
   const dReal scale = 0.1;
   const dReal fmass = 0.1;
   // create random bodies
-  for (i=0; i<NUM; i++) {
+  for (i=0; i<num; i++) {
     // create bodies at random position and orientation
     body[i] = dBodyCreate (world);
     dBodySetPosition (body[i],(dRandReal()*2-1),(dRandReal()*2-1),
@@ -132,7 +138,7 @@ void cuda_createTest()
     dBodySetLinearVel (body[i], scale*(dRandReal()*2-1),scale*(dRandReal()*2-1),
 		       scale*(dRandReal()*2-1));
     dBodySetAngularVel (body[i], scale*(dRandReal()*2-1),scale*(dRandReal()*2-1),
-*			scale*(dRandReal()*2-1));
+			scale*(dRandReal()*2-1));
 
     // set random mass (random diagonal mass rotated by a random amount)
     dMass m;
@@ -144,7 +150,7 @@ void cuda_createTest()
     dMassRotate (&m,R);
     dBodySetMass (body[i],&m);
   }
-  cuda_copyBodiesToDevice(cuda_body, body, NUM);
+  cuda_copyBodiesToDevice(cuda_body, body, num);
 }
 
 // start simulation - set viewpoint
@@ -163,7 +169,7 @@ static void start()
 
 static void cuda_start()
 {
-	b_buff = (dBodyID) malloc(sizeof(dxBody)*NUM);
+	b_buff = (dBodyID) malloc(sizeof(dxBody)*num);
   dAllocateODEDataForThread(dAllocateMaskAll);
   if (gfx) {
     static float xyz[3] = {2.6117f,-1.4433f,2.3700f};
@@ -182,8 +188,8 @@ static void simLoop (int pause)
     int i;
     const dReal scale1 = 0.005;
     const dReal scale2 = 0.005;
-    for (i=0; i<NUM; i++) {
-      dBodyAddForce (body[i],
+    for (i=0; i<num; i++) {
+/*      dBodyAddForce (body[i],
 		     scale1*(dRandReal()*2-1),
 		     scale1*(dRandReal()*2-1),
 		     scale1*(dRandReal()*2-1));
@@ -191,15 +197,16 @@ static void simLoop (int pause)
 		     scale2*(dRandReal()*2-1),
 		     scale2*(dRandReal()*2-1),
 		     scale2*(dRandReal()*2-1));
+			 */
     }
 
     dWorldStep (world,0.005);
   }
 
-  // float sides[3] = {SIDE,SIDE,SIDE};
+  float sides[3] = {SIDE,SIDE,SIDE};
   if (gfx) {
     dsSetColor (1,1,0);
-    for (int i=0; i<NUM; i++)
+    for (int i=0; i<num; i++)
       dsDrawSphere (dBodyGetPosition(body[i]), dBodyGetRotation(body[i]),RADIUS);
   }
 }
@@ -211,7 +218,7 @@ static void cuda_simLoop (int pause)
     int i;
     const dReal scale1 = 0.005;
     const dReal scale2 = 0.005;
-	for (i=0; i<NUM; i++) {
+	for (i=0; i<num; i++) {
 /*		dBodyAddForce (body[i],
 		               scale1*(dRandReal()*2-1),
 		               scale1*(dRandReal()*2-1),
@@ -225,25 +232,36 @@ static void cuda_simLoop (int pause)
     //cuda_dWorldStep (world,0.005);
 	//dWorldStep (world,0.005);
 
-	//cuda_copyBodiesToDevice2(cuda_body, world, NUM);
+	//cuda_copyBodiesToDevice2(cuda_body, world, num);
 	cuda_dxProcessIslands(world, cuda_body, 0.005, NULL);
 	if (gfx) {
-		cuda_copyBodiesFromDevice(world, cuda_body, NUM, b_buff);
+		cuda_copyBodiesFromDevice(world, cuda_body, num, b_buff);
 	}
   }
 
-  // float sides[3] = {SIDE,SIDE,SIDE};
+  float sides[3] = {SIDE,SIDE,SIDE};
   if (gfx) {
     dsSetColor (1,1,0);
-    for (int i=0; i<NUM; i++)
-      dsDrawSphere (dBodyGetPosition(body[i]), dBodyGetRotation(body[i]),RADIUS);
+    for (int i=0; i<num; i++)
+      //dsDrawSphere (dBodyGetPosition(body[i]), dBodyGetRotation(body[i]),RADIUS);
+      dsDrawBox (dBodyGetPosition(body[i]), dBodyGetRotation(body[i]),sides);
   }
 }
 
 int main (int argc, char **argv)
 {
+	if (argc < 3 || ((num = atoi(argv[2])) <= 0)) {
+		fprintf(stderr, "Usage: %s {c|o} num\n", argv[0]);
+		exit(1);
+	}
+	if (argv[1][0] == 'c') {
+		use_cuda = true;
+	} else {
+		use_cuda = false;
+	}
+	body = (dBodyID*) malloc(sizeof(dBodyID)*num);
   if (use_cuda) {
-    cuda_body = cuda_initBodiesOnDevice(NUM);
+    cuda_body = cuda_initBodiesOnDevice(num);
   }
 
   // setup pointers to drawstuff callback functions
@@ -267,6 +285,8 @@ int main (int argc, char **argv)
   dsSimulationLoop (argc,argv,352,288,&fn);
 
   cuda_free(cuda_body);
+
+	free(body);
 
   dWorldDestroy(world);
   dCloseODE();

@@ -191,14 +191,18 @@ __device__ dReal cuda_sinc(dReal x)
 // `body' is the body array, `nb' is the size of the array.
 // `_joint' is the body array, `nj' is the size of the array.
 
- __global__ void cuda_step(dxBody *body, int nb, dReal stepsize, dVector3 gravity)
+ __global__ void cuda_step(dxBody *body, int nb, dReal stepsize, dReal g1, dReal g2, dReal g3)
 {
+	dVector3 gravity; 
+	gravity[0] = g1;
+	gravity[1] = g2;
+	gravity[2] = g3;
 	int i,j,k;
 
 	dReal I[3*3], invI[3*3];
 
 	int bid = threadIdx.x + blockDim.x * blockIdx.x;
-	if (bid > nb) { return; }
+	if (bid >= nb) { return; }
 
 	// for all bodies, compute the inertia tensor and its inverse in the global
 	// frame, and compute the rotational force and add it to the torque
@@ -394,8 +398,8 @@ __device__ dReal cuda_sinc(dReal x)
 
 ODE_API void cuda_dInternalStepIsland_x1 (dxWorld *world, dxBody *cuda_body, int nb, dxJoint * *_joint, int nj, dReal stepsize)
 {
-	//cuda_step<<<BLOCKSIZE, 1>>>(cuda_body, world->nb, NULL, 0, stepsize, world->gravity);
-	cuda_step<<<BLOCKSIZE/nb, 256>>>(cuda_body, world->nb, stepsize, world->gravity);
+	cuda_step<<<BLOCKSIZE, 1>>>(cuda_body, world->nb, stepsize, world->gravity[0], world->gravity[1], world->gravity[2]);
+	//cuda_step<<<BLOCKSIZE/nb, 256>>>(cuda_body, world->nb, stepsize, world->gravity[0], world->gravity[1], world->gravity[2]);
 }
 
  ODE_API void cuda_dxProcessIslands(dxWorld *world, dxBody *cuda_body, dReal stepsize, dstepper_fn_t stepper)
