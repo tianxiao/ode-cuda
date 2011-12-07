@@ -112,32 +112,48 @@ __device__ void cuda_dMultiply0_333(dReal *A, dReal *B, dReal *C) {
 	A[0] = dDOT13((B),(C)); 
 	A[1] = dDOT13((B),(C+1)); 
 	A[2] = dDOT13((B),(C+2)); 
-	A[4] = dDOT13((B+4),(C)); 
-	A[5] = dDOT13((B+4),(C+1)); 
-	A[6] = dDOT13((B+4),(C+2));
-	A[8] = dDOT13((B+8),(C)); 
-	A[9] = dDOT13((B+8),(C+1)); 
-	A[10] = dDOT13((B+8),(C+2)); 
+	//A[4] = dDOT13((B+4),(C)); 
+	A[4] = dDOT13((B+3),(C)); 
+	//A[5] = dDOT13((B+4),(C+1)); 
+	A[5] = dDOT13((B+3),(C+1)); 
+	//A[6] = dDOT13((B+4),(C+2));
+	A[6] = dDOT13((B+3),(C+2));
+	//A[8] = dDOT13((B+8),(C)); 
+	A[8] = dDOT13((B+6),(C)); 
+	//A[9] = dDOT13((B+8),(C+1)); 
+	A[9] = dDOT13((B+6),(C+1)); 
+	//A[10] = dDOT13((B+8),(C+2)); 
+	A[10] = dDOT13((B+6),(C+2)); 
 }
 
 // A = B*C^T  A, B, C all 3x3
 __device__ void cuda_dMultiply2_333(dReal *A, dReal *B, dReal *C) {
 	A[0] = dDOT((B),(C)); 
-	A[1] = dDOT((B),(C+4)); 
-	A[2] = dDOT((B),(C+8)); 
-	A[4] = dDOT((B+4),(C)); 
-	A[5] = dDOT((B+4),(C+4)); 
-	A[6] = dDOT((B+4),(C+8));
-	A[8] = dDOT((B+8),(C)); 
-	A[9] = dDOT((B+8),(C+4)); 
-	A[10] = dDOT((B+8),(C+8)); 
+	//A[1] = dDOT((B),(C+4)); 
+	A[1] = dDOT((B),(C+3)); 
+	//A[2] = dDOT((B),(C+8)); 
+	A[2] = dDOT((B),(C+3)); 
+	//A[4] = dDOT((B+4),(C)); 
+	A[4] = dDOT((B+3),(C)); 
+	//A[5] = dDOT((B+4),(C+4)); 
+	A[5] = dDOT((B+3),(C+3)); 
+	//A[6] = dDOT((B+4),(C+8));
+	A[6] = dDOT((B+3),(C+6));
+	//A[8] = dDOT((B+8),(C)); 
+	A[8] = dDOT((B+6),(C)); 
+	//A[9] = dDOT((B+8),(C+4)); 
+	A[9] = dDOT((B+6),(C+3)); 
+	//A[10] = dDOT((B+8),(C+8)); 
+	A[10] = dDOT((B+6),(C+6)); 
 }
 
 // A = B*C  A 3x1, B 3x3, C 3x1
 __device__ void cuda_dMultiply0_331(dReal *A, dReal *B, dReal *C) {
 	A[0] = dDOT((B),(C));
-	A[1] = dDOT((B+4),(C));
-	A[2] = dDOT((B+8),(C));
+	//A[1] = dDOT((B+4),(C));
+	A[1] = dDOT((B+3),(C));
+	//A[2] = dDOT((B+8),(C));
+	A[2] = dDOT((B+6),(C));
 }
 
 // A = B*C  A 1x3, B 1x3, C 3x3
@@ -150,8 +166,10 @@ __device__ void cuda_dMultiply0_133(dReal *A, dReal *B, dReal *C) {
 // A += B*C  A 3x1, B 3x3, C 3x1
 __device__ void cuda_dMultiplyAdd0_331(dReal *A, dReal *B, dReal *C) {
 	A[0] += dDOT((B),(C));
-	A[1] += dDOT((B+4),(C));
-	A[2] += dDOT((B+8),(C));
+	//A[1] += dDOT((B+4),(C));
+	A[1] += dDOT((B+3),(C));
+	//A[2] += dDOT((B+8),(C));
+	A[2] += dDOT((B+6),(C));
 }
 
 // a -= b cross c
