@@ -47,7 +47,7 @@ void cuda_fat_matrix(int p, int q, int r)
 
 int main(int argc, char *argv[])
 {
-	int dim;
+	int p, q, r;
 	if (argc < 5 || ((p = atoi(argv[2])) <= 0) || ((q = atoi(argv[3])) <= 0) || ((r = atoi(argv[4])) <= 0)) {
 		fprintf(stderr, "Usage: %s {c|o} P Q R\n", argv[0]);
 		exit(1);
