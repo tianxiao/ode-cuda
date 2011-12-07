@@ -369,23 +369,22 @@ void dInternalStepIsland_x1 (dxWorld *world, dxBody * const *body, int nb,
 #ifdef TIMING
   dTimerNow ("create mass matrix");
 #endif
-  int nskip = dPAD (n6);
-  ALLOCA(dReal, invM, n6*nskip*sizeof(dReal));
+  ALLOCA(dReal, invM, n6*n6);
 
   dSetZero (invM,n6*nskip);
   for (i=0; i<nb; i++) {
-    dReal *MM = invM+(i*6)*nskip+(i*6);
+    dReal *MM = invM+(i*6)*n6+(i*6);
     MM[0] = body[i]->invMass;
-    MM[nskip+1] = body[i]->invMass;
-    MM[2*nskip+2] = body[i]->invMass;
-    MM += 3*nskip+3;
+    MM[n6+1] = body[i]->invMass;
+    MM[2*n6+2] = body[i]->invMass;
+    MM += 3*n6+3;
     for (j=0; j<3; j++) for (k=0; k<3; k++) {
-      MM[j*nskip+k] = invI[i*12+j*4+k];
+      MM[j*n6+k] = invI[i*12+j*4+k];
     }
   }
 
   // copy invM to device
-  dev_invM = cuda_copyToDevice(invM, n6*nskip*sizeof(dReal));
+  dev_invM = cuda_copyToDevice(invM, n6*n6*sizeof(dReal));
 
   // assemble some body vectors: fe = external forces, v = velocities
   ALLOCA(dReal,fe,n6*sizeof(dReal));
@@ -425,17 +424,17 @@ void dInternalStepIsland_x1 (dxWorld *world, dxBody * const *body, int nb,
 #   ifdef TIMING
     dTimerNow ("create J");
 #   endif
-    ALLOCA(dReal,J,m*nskip*sizeof(dReal));
-    dSetZero (J,m*nskip);
+    ALLOCA(dReal,J,m*n6*sizeof(dReal));
+    dSetZero (J,m*n6);
     dxJoint::Info2 Jinfo;
-    Jinfo.rowskip = nskip;
+    Jinfo.rowskip = n6;
     Jinfo.fps = dRecip(stepsize);
     Jinfo.erp = world->global_erp;
     for (i=0; i<nj; i++) {
-      Jinfo.J1l = J + nskip*ofs[i] + 6*joint[i]->node[0].body->tag;
+      Jinfo.J1l = J + n6*ofs[i] + 6*joint[i]->node[0].body->tag;
       Jinfo.J1a = Jinfo.J1l + 3;
       if (joint[i]->node[1].body) {
-	Jinfo.J2l = J + nskip*ofs[i] + 6*joint[i]->node[1].body->tag;
+	Jinfo.J2l = J + n6*ofs[i] + 6*joint[i]->node[1].body->tag;
 	Jinfo.J2a = Jinfo.J2l + 3;
       }
       else {
@@ -455,32 +454,32 @@ void dInternalStepIsland_x1 (dxWorld *world, dxBody * const *body, int nb,
     }
 
     // copy J to device
-	dev_J = cuda_copyToDevice(J, m*nskip*sizeof(dReal));
-	cudaMalloc((void **) dev_JinvM, m*nskip*sizeof(dReal));
+	dev_J = cuda_copyToDevice(J, m*n6*sizeof(dReal));
+	cudaMalloc((void **) dev_JinvM, m*n6*sizeof(dReal));
 
     // compute A = J*invM*J'
 #   ifdef TIMING
     dTimerNow ("compute A");
 #   endif
-    ALLOCA(dReal,JinvM,m*nskip*sizeof(dReal));
-    //dSetZero (JinvM,m*nskip);
+    ALLOCA(dReal,JinvM,m*n6*sizeof(dReal));
+    //dSetZero (JinvM,m*n6);
     //dMultiply0 (JinvM,J,invM,m,n6,n6);
 
     cuda_dMultiply0(dev_JinvM, dev_J, dev_invM, m, n6, n6);
-    cuda_copyFromDevice(JinvM, dev_JinvM, m*nskip*sizeof(dReal));
+    cuda_copyFromDevice(JinvM, dev_JinvM, m*n6*sizeof(dReal));
 
     int mskip = dPAD(m);
     ALLOCA(dReal,A,m*mskip*sizeof(dReal));
 	cudaMalloc((void **) dev_A, m*mskip*sizeof(dReal));
 
-    //dSetZero (A,m*mskip);
+    //dSetZero (A,m*m);
     //dMultiply2 (A,JinvM,J,m,n6,m);
 
     cuda_dMultiply2(dev_A, dev_JinvM, dev_J, m, n6, m);
-    cuda_copyFromDevice(A, dev_A, m*mskip*sizeof(dReal));
+    cuda_copyFromDevice(A, dev_A, m*m*sizeof(dReal));
 
     // add cfm to the diagonal of A
-    for (i=0; i<m; i++) A[i*mskip+i] += cfm[i] * Jinfo.fps;
+    for (i=0; i<m; i++) A[i*m+i] += cfm[i] * Jinfo.fps;
 
 #   ifdef COMPARE_METHODS
     comparator.nextMatrix (A,m,m,1,"A");
@@ -532,8 +531,8 @@ void dInternalStepIsland_x1 (dxWorld *world, dxBody * const *body, int nb,
 #   ifdef TIMING
     dTimerNow ("factorize A");
 #   endif
-    ALLOCA(dReal,L,m*mskip*sizeof(dReal));
-    memcpy (L,A,m*mskip*sizeof(dReal));
+    ALLOCA(dReal,L,m*m*sizeof(dReal));
+    memcpy (L,A,m*m*sizeof(dReal));
     if (dFactorCholesky (L,m)==0) dDebug (0,"A is not positive definite");
 
     // compute lambda
@@ -847,9 +846,8 @@ void dInternalStepIsland_x2 (dxWorld *world, dxBody * const *body, int nb,
     // in common. it does not compute the diagonal blocks of A however -
     // another similar algorithm does that.
 
-    int mskip = dPAD(m);
-    ALLOCA(dReal,A,m*mskip*sizeof(dReal));
-    dSetZero (A,m*mskip);
+    ALLOCA(dReal,A,m*m*sizeof(dReal));
+    dSetZero (A,m*m);
     for (i=0; i<nb; i++) {
       for (dxJointNode *n1=body[i]->firstjoint; n1; n1=n1->next) {
 	for (dxJointNode *n2=n1->next; n2; n2=n2->next) {
@@ -874,29 +872,29 @@ void dInternalStepIsland_x2 (dxWorld *world, dxBody * const *body, int nb,
 	  dIASSERT(joint[j2]->node[1].body || jb2==0);
 
 	  // set block of A
-	  MultiplyAdd2_p8r (A + ofs[j1]*mskip + ofs[j2],
+	  MultiplyAdd2_p8r (A + ofs[j1]*m + ofs[j2],
 			    JinvM + 2*8*ofs[j1] + jb1*8*info[j1].m,
 			    J     + 2*8*ofs[j2] + jb2*8*info[j2].m,
-			    info[j1].m,info[j2].m, mskip);
+			    info[j1].m,info[j2].m, m);
 	}
       }
     }
     // compute diagonal blocks of A
     for (i=0; i<nj; i++) {
-      Multiply2_p8r (A + ofs[i]*(mskip+1),
+      Multiply2_p8r (A + ofs[i]*(m+1),
 		     JinvM + 2*8*ofs[i],
 		     J + 2*8*ofs[i],
-		     info[i].m,info[i].m, mskip);
+		     info[i].m,info[i].m, m);
       if (joint[i]->node[1].body) {
-	MultiplyAdd2_p8r (A + ofs[i]*(mskip+1),
+	MultiplyAdd2_p8r (A + ofs[i]*(m+1),
 			  JinvM + 2*8*ofs[i] + 8*info[i].m,
 			  J + 2*8*ofs[i] + 8*info[i].m,
-			  info[i].m,info[i].m, mskip);
+			  info[i].m,info[i].m, m);
       }
     }
 
     // add cfm to the diagonal of A
-    for (i=0; i<m; i++) A[i*mskip+i] += cfm[i] * stepsize1;
+    for (i=0; i<m; i++) A[i*m+i] += cfm[i] * stepsize1;
 
 #   ifdef COMPARE_METHODS
     comparator.nextMatrix (A,m,m,1,"A");
@@ -958,8 +956,8 @@ void dInternalStepIsland_x2 (dxWorld *world, dxBody * const *body, int nb,
 //#   ifdef TIMING
 //    dTimerNow ("factorize A");
 //#   endif
-//    dReal *L = (dReal*) ALLOCA (m*mskip*sizeof(dReal));
-//    memcpy (L,A,m*mskip*sizeof(dReal));
+//    dReal *L = (dReal*) ALLOCA (m*m*sizeof(dReal));
+//    memcpy (L,A,m*m*sizeof(dReal));
 //#   ifdef FAST_FACTOR
 //    dFastFactorCholesky (L,m);  // does not report non positive definiteness
 //#   else
