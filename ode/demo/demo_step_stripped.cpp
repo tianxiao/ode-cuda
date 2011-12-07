@@ -60,7 +60,7 @@
 
 static bool gfx = true;
 //static bool use_cuda = false;
-static bool use_cuda = true;
+static bool use_cuda = false;
 
 // dynamics and collision objects
 
