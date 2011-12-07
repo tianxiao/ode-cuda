@@ -149,6 +149,7 @@ void cuda_createTest()
     dQtoR (q,R);
     dMassRotate (&m,R);
     dBodySetMass (body[i],&m);
+	printf("%f\t%f\t%f\t\n", body[i]->posr.pos[0], body[i]->posr.pos[1], body[i]->posr.pos[2]);
   }
   cuda_copyBodiesToDevice(cuda_body, body, num);
 }
@@ -250,6 +251,8 @@ static void cuda_simLoop (int pause)
 
 int main (int argc, char **argv)
 {
+	printf("ODE: sizeof(dxBody): %d\n", sizeof(dxBody));
+
 	if (argc < 3 || ((num = atoi(argv[2])) <= 0)) {
 		fprintf(stderr, "Usage: %s {c|o} num\n", argv[0]);
 		exit(1);

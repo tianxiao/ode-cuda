@@ -78,10 +78,12 @@ ODE_API dReal *cuda_makeOnDevice(int n)
 
 ODE_API dxBody *cuda_copyBodiesToDevice(dxBody *cuda_body, dxBody **body, int NUM)
 {
+	printf("CUDA: sizeof(dxBody): %d\n", sizeof(dxBody));
 	int i;
+	printf("Copying Bodies to Device\n");
 	for (i=0;i<NUM;i++) {
 		cudaMemcpy(cuda_body+i, body[i], sizeof(dxBody), cudaMemcpyHostToDevice);
-//		printf("\tbody[%d]->posr.pos[0] = %f\n", i, body[i]->posr.pos[0]);
+		printf("%f\t%f\t%f\t\n", i, body[i]->posr.pos[0], body[i]->posr.pos[1], body[i]->posr.pos[2]);
 	}
 	cuda_checkError("memcpy bodies h to d");
 	return cuda_body;

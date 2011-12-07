@@ -16,6 +16,7 @@
 #include <cuda.h>
 #include <ode/cuda_helper.h>
 #include <ode/cuda_matrix.h>
+#include "cuprintf.cu"
 
 #define BLOCKSIZE 16
 
@@ -203,6 +204,7 @@ __device__ dReal cuda_sinc(dReal x)
 
 	int bid = threadIdx.x + blockDim.x * blockIdx.x;
 	if (bid >= nb) { return; }
+	cuPrintf("%f\t%f\t%f\n", body[bid].posr.pos[0], body[bid].posr.pos[0], body[bid].posr.pos[0]);
 
 	// for all bodies, compute the inertia tensor and its inverse in the global
 	// frame, and compute the rotational force and add it to the torque
@@ -398,7 +400,12 @@ __device__ dReal cuda_sinc(dReal x)
 
 ODE_API void cuda_dInternalStepIsland_x1 (dxWorld *world, dxBody *cuda_body, int nb, dxJoint * *_joint, int nj, dReal stepsize)
 {
-	cuda_step<<<BLOCKSIZE, 1>>>(cuda_body, world->nb, stepsize, world->gravity[0], world->gravity[1], world->gravity[2]);
+	cudaPrintfInit();
+
+	cuda_step<<<nb, 1>>>(cuda_body, world->nb, stepsize, world->gravity[0], world->gravity[1], world->gravity[2]);
+
+	cudaPrintfDisplay(stdout, true);
+	cudaPrintfEnd();
 	//cuda_step<<<BLOCKSIZE/nb, 256>>>(cuda_body, world->nb, stepsize, world->gravity[0], world->gravity[1], world->gravity[2]);
 }
 

@@ -67,6 +67,7 @@ struct dObject : public dBase {
   void *userdata;		// user settable data
   dObject(dxWorld *w);
   virtual ~dObject() { }
+//	char padding;
 };
 
 // auto disable parameters
