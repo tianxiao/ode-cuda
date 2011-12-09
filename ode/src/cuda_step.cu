@@ -16,7 +16,7 @@
 #include <cuda.h>
 #include <ode/cuda_helper.h>
 #include <ode/cuda_matrix.h>
-#include "cuprintf.cu"
+//#include "cuprintf.cu"
 
 #define BLOCKSIZE 16
 
@@ -314,15 +314,15 @@ __device__ dReal cuda_sinc(dReal x)
 
 	dReal h = stepsize;
 
-	cuPrintf("h == stepsize: %f == %f\n", h, stepsize);
-	cuPrintf("body[bid]: XYZ1: %f\t%f\t%f\t\n", body[bid].posr.pos[0], body[bid].posr.pos[1], body[bid].posr.pos[2]);
-	cuPrintf("body[bid]: VEL1: %f\t%f\t%f\t\n", body[bid].lvel[0], body[bid].lvel[1], body[bid].lvel[2]);
+//	cuPrintf("h == stepsize: %f == %f\n", h, stepsize);
+//	cuPrintf("body[bid]: XYZ1: %f\t%f\t%f\t\n", body[bid].posr.pos[0], body[bid].posr.pos[1], body[bid].posr.pos[2]);
+//	cuPrintf("body[bid]: VEL1: %f\t%f\t%f\t\n", body[bid].lvel[0], body[bid].lvel[1], body[bid].lvel[2]);
 
 	// handle linear velocity
 	for (j=0; j<3; j++) body[bid].posr.pos[j] += h * body[bid].lvel[j];
 
-	cuPrintf("body[bid]: XYZ2: %f\t%f\t%f\t\n", body[bid].posr.pos[0], body[bid].posr.pos[1], body[bid].posr.pos[2]);
-	cuPrintf("body[bid]: VEL2: %f\t%f\t%f\t\n\n", body[bid].lvel[0], body[bid].lvel[1], body[bid].lvel[2]);
+//	cuPrintf("body[bid]: XYZ2: %f\t%f\t%f\t\n", body[bid].posr.pos[0], body[bid].posr.pos[1], body[bid].posr.pos[2]);
+//	cuPrintf("body[bid]: VEL2: %f\t%f\t%f\t\n\n", body[bid].lvel[0], body[bid].lvel[1], body[bid].lvel[2]);
 
 	if (body[bid].flags & dxBodyFlagFiniteRotation) {
 		dVector3 irv;	// infitesimal rotation vector
@@ -424,12 +424,12 @@ __device__ dReal cuda_sinc(dReal x)
 
 ODE_API void cuda_dInternalStepIsland_x1 (dxWorld *world, dxBody *cuda_body, int nb, dxJoint * *_joint, int nj, dReal stepsize)
 {
-	cudaPrintfInit();
+//	cudaPrintfInit();
 
 	cuda_step<<<nb, 1>>>(cuda_body, world->nb, stepsize, world->gravity[0], world->gravity[1], world->gravity[2]);
 
-	cudaPrintfDisplay(stdout, true);
-	cudaPrintfEnd();
+//	cudaPrintfDisplay(stdout, true);
+//	cudaPrintfEnd();
 	//cuda_step<<<BLOCKSIZE/nb, 256>>>(cuda_body, world->nb, stepsize, world->gravity[0], world->gravity[1], world->gravity[2]);
 }
 

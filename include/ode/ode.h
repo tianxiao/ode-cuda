@@ -35,6 +35,7 @@
 #include <ode/odemath.h>
 #include <ode/matrix.h>
 #include <ode/cuda_helper.h>
+#include <ode/cuda_mltstep.h>
 #include <ode/cuda_demo_helper.h>
 #include <ode/cuda_matrix.h>
 #include <ode/cuda_step.h>

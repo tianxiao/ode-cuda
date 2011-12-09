@@ -20,6 +20,8 @@ ODE_API dxBody **cuda_copyBodiesFromDevice(dxBody **body, dxBody *cuda_body, int
 ODE_API dxBody **cuda_copyBodiesFromDevice2(dxWorld *world, dxBody *cuda_body, int NUM, dxBody *b_buff);
 ODE_API dxBody *cuda_initBodiesOnDevice(int NUM);
 ODE_API void cuda_free(dxBody *ptr);
+ODE_API void cuda_free2(dReal *ptr);
+ODE_API void *cuda_malloc(void **dev, int NUM);
 
 #ifdef __cplusplus
 }

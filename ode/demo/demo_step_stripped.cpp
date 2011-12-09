@@ -61,7 +61,7 @@
 
 static int num = 10;
 
-static bool gfx = true;
+static bool gfx = false;
 //static bool use_cuda = false;
 static bool use_cuda = true;
 
@@ -149,7 +149,7 @@ void cuda_createTest()
     dQtoR (q,R);
     dMassRotate (&m,R);
     dBodySetMass (body[i],&m);
-	printf("%f\t%f\t%f\t\n", body[i]->posr.pos[0], body[i]->posr.pos[1], body[i]->posr.pos[2]);
+	//printf("%f\t%f\t%f\t\n", body[i]->posr.pos[0], body[i]->posr.pos[1], body[i]->posr.pos[2]);
   }
   cuda_copyBodiesToDevice(cuda_body, body, num);
 }
@@ -159,24 +159,13 @@ void cuda_createTest()
 static void start()
 {
   dAllocateODEDataForThread(dAllocateMaskAll);
-
-  if (gfx) {
-    static float xyz[3] = {2.6117f,-1.4433f,2.3700f};
-    static float hpr[3] = {151.5000f,-30.5000f,0.0000f};
-    dsSetViewpoint (xyz,hpr);
-  }
   createTest();
 }
 
 static void cuda_start()
 {
-	b_buff = (dBodyID) malloc(sizeof(dxBody)*num);
+  b_buff = (dBodyID) malloc(sizeof(dxBody)*num);
   dAllocateODEDataForThread(dAllocateMaskAll);
-  if (gfx) {
-    static float xyz[3] = {2.6117f,-1.4433f,2.3700f};
-    static float hpr[3] = {151.5000f,-30.5000f,0.0000f};
-    dsSetViewpoint (xyz,hpr);
-  }
   cuda_createTest();
 }
 
@@ -184,76 +173,17 @@ static void cuda_start()
 
 static void simLoop (int pause)
 {
-  if (!pause) {
-    // add random forces and torques to all bodies
-    int i;
-    const dReal scale1 = 0.005;
-    const dReal scale2 = 0.005;
-    for (i=0; i<num; i++) {
-/*      dBodyAddForce (body[i],
-		     scale1*(dRandReal()*2-1),
-		     scale1*(dRandReal()*2-1),
-		     scale1*(dRandReal()*2-1));
-      dBodyAddTorque (body[i],
-		     scale2*(dRandReal()*2-1),
-		     scale2*(dRandReal()*2-1),
-		     scale2*(dRandReal()*2-1));
-			 */
-    }
-
-    dWorldStep (world,0.005);
-  }
-
-  float sides[3] = {SIDE,SIDE,SIDE};
-  if (gfx) {
-    dsSetColor (1,1,0);
-    for (int i=0; i<num; i++)
-      dsDrawSphere (dBodyGetPosition(body[i]), dBodyGetRotation(body[i]),RADIUS);
-  }
+	dWorldStep (world,0.005);
 }
 
 static void cuda_simLoop (int pause)
 {
-  if (!pause) {
-    // add random forces and torques to all bodies
-    int i;
-    const dReal scale1 = 0.005;
-    const dReal scale2 = 0.005;
-	for (i=0; i<num; i++) {
-/*		dBodyAddForce (body[i],
-		               scale1*(dRandReal()*2-1),
-		               scale1*(dRandReal()*2-1),
-		               scale1*(dRandReal()*2-1));
-		dBodyAddTorque (body[i],
-		                scale2*(dRandReal()*2-1),
-		                scale2*(dRandReal()*2-1),
-		                scale2*(dRandReal()*2-1));
-						*/
-    }
-    //cuda_dWorldStep (world,0.005);
-	//dWorldStep (world,0.005);
-
-	//cuda_copyBodiesToDevice2(cuda_body, world, num);
-	//cuda_dxProcessIslands(world, cuda_body, 0.005, NULL);
 	cuda_dxProcessIslands(world, cuda_body, 0.005, NULL);
-	if (gfx) {
-		//cuda_copyBodiesFromDevice(world, cuda_body, num, b_buff);
-		cuda_copyBodiesFromDevice(body, cuda_body, num, b_buff);
-	}
-  }
-
-  float sides[3] = {SIDE,SIDE,SIDE};
-  if (gfx) {
-    dsSetColor (1,1,0);
-    for (int i=0; i<num; i++)
-      //dsDrawSphere (dBodyGetPosition(body[i]), dBodyGetRotation(body[i]),RADIUS);
-      dsDrawBox (dBodyGetPosition(body[i]), dBodyGetRotation(body[i]),sides);
-  }
 }
 
 int main (int argc, char **argv)
 {
-	printf("ODE: sizeof(dxBody): %d\n", (int) sizeof(dxBody));
+	//printf("ODE: sizeof(dxBody): %d\n", (int) sizeof(dxBody));
 
 	if (argc < 3 || ((num = atoi(argv[2])) <= 0)) {
 		fprintf(stderr, "Usage: %s {c|o} num\n", argv[0]);
@@ -265,12 +195,9 @@ int main (int argc, char **argv)
 		use_cuda = false;
 	}
 	body = (dBodyID*) malloc(sizeof(dBodyID)*num);
-  if (use_cuda) {
-    cuda_body = cuda_initBodiesOnDevice(num);
-  }
 
   // setup pointers to drawstuff callback functions
-  dsFunctions fn;
+/*  dsFunctions fn;
   fn.version = DS_VERSION;
   if (use_cuda) {
     fn.start = &cuda_start;
@@ -282,14 +209,29 @@ int main (int argc, char **argv)
   fn.command = 0;
   fn.stop = 0;
   fn.path_to_textures = DRAWSTUFF_TEXTURE_PATH;
-
+*/
   dInitODE2(0);
   dRandSetSeed (time(0));
 
   // run simulation
-  dsSimulationLoop (argc,argv,352,288,&fn);
+/*  dsSimulationLoop (argc,argv,352,288,&fn); */
 
-  cuda_free(cuda_body);
+  int i;
+  if (use_cuda) {
+//	fprintf(stderr, "CUDA\n");
+    cuda_body = cuda_initBodiesOnDevice(num);
+	cuda_start(); 
+	for (i=0;i<100;i++) {
+		cuda_simLoop(0);
+	}
+	cuda_free(cuda_body);
+  } else {
+//	fprintf(stderr, "ODE\n");
+	start();
+	for (i=0;i<100;i++) {
+		simLoop(0);
+	}
+  }
 
 	free(body);
 

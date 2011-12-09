@@ -18,7 +18,7 @@ libfast_la_SOURCES = fastldlt.c fastltsolve.c fastdot.c fastlsolve.c
 
 lib_LTLIBRARIES = libode.la
 
-libode_la_LDFLAGS = @EXTRA_LIBTOOL_LDFLAGS@ @ODE_VERSION_INFO@
+libode_la_LDFLAGS = @EXTRA_LIBTOOL_LDFLAGS@ @ODE_VERSION_INFO@ $(NVCC_FLAGS)
 libode_la_LIBADD = libfast.la joints/libjoints.la
 
 
@@ -72,7 +72,8 @@ libode_la_SOURCES =     array.cpp array.h \
 						cuPrintf.cu cuPrintf.cuh \
 						cuda_helper.cu cuda_helper.h \
 						cuda_demo_helper.cu cuda_demo_helper.h \
-						cuda_step.cu cuda_step.h
+						cuda_step.cu cuda_step.h \
+						cuda_mltstep.cpp cuda_mltstep.h
 
 
 ###################################
